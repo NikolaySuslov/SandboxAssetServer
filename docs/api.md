@@ -1,4 +1,3 @@
-
 Asset Server Planned APIs
 =========================
 
