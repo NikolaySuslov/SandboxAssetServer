@@ -9,16 +9,17 @@ Access
 
 Returns the binary asset with the given id.
 
-### GET *root*/assets/by-id/\[id\]/info (planned)
+### GET *root*/assets/by-id/\[id\]/meta (planned)
 
 Returns a JSON object containing metadata about the asset.
 
-### GET *root*/assets/by-id/\[id\]/info/\[key\] (planned)
+### GET *root*/assets/by-id/\[id\]/meta/\[key\]+ (planned)
 
-Returns a particular piece of metadata about the asset, e.g. owner, upload date, format, etc.
+Returns a particular piece or pieces of metadata about the asset, e.g. owner, upload date, format, etc.
 
 ### GET *root*/assets/by-id/\[id\]/v/\[revision\] (planned)
 
+Returns an old version of the asset.
 
 
 Index
@@ -48,11 +49,11 @@ Update
 
 Overwrite the model at the given id, and optionally save the old version. Returns status code only.
 
-### POST *root*/assets/by-id/\[id\]/info (planned)
+### POST *root*/assets/by-id/\[id\]/meta (planned)
 
 Accepts a JSON object. Merge the old set of metadata with the given object, keeping protected fields unchanged. Returns the updated metadata.
 
-### POST *root*/assets/by-id/\[id\]/info/\[key\] (planned)
+### POST *root*/assets/by-id/\[id\]/meta/\[key\] (planned)
 
 Update a particular piece of metadata. Returns the new value.
 
@@ -64,10 +65,30 @@ Delete
 
 Destroy the asset at the given id, and all previous versions. Returns status code only.
 
-### DELETE *root*/assets/by-id/\[id\]/info (planned)
+### DELETE *root*/assets/by-id/\[id\]/meta (planned)
 
 Delete all user-set metadata for the given asset. Returns status code only.
 
-### DELETE *root*/assets/by-id/\[id\]/info/\[key\] (planned)
+### DELETE *root*/assets/by-id/\[id\]/meta/\[key\]+ (planned)
 
 Delete the given piece of metadata for the given asset. Returns status code only.
+
+
+Group Management
+----------------
+
+### GET *root*/groups/\[groupname\]
+
+Returns a JSON object containing the group name and member list.
+
+### POST *root*/groups/\[groupname\]/adduser
+
+Add a member to the given group. Request body is a user or list of users. Returns status code only.
+
+### POST *root*/groups/\[groupname\]/rmuser
+
+Remove a member from the given group. Request body is a user or list of users. Returns status code only.
+
+### POST *root*/groups/new
+
+Create a new group containing the requesting user. Request body should be the name of the group to be created. Returns URL of the resulting group.

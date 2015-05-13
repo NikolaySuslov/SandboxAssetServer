@@ -3,7 +3,7 @@ So, it’s still too hard to get content into the Sandbox. The 3DR is a good sta
 Requirements
 ------------
 
-Stage 1
+### Stage 1
 
 * Be able to run as a standalone service, or as a module within Sandbox
 * Allow anonymous download of any asset
@@ -18,7 +18,7 @@ Stage 1
 	* should not depend on filename for info about type	
 * Support CORS
 
-Stage 2
+### Stage 2
 
 * Expose some method to list all files uploaded by some user
 * Enforce some max total disk space per user
@@ -27,7 +27,7 @@ Stage 2
 * Allow overwrite of file at given UID
 	* enforce credentials - on original uploader can change
 
-Stage 3
+### Stage 3
 
 * Verify file contents vs defined type
 * attach additional user specified metadata to assets
