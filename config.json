@@ -1,9 +1,10 @@
 {
 	"basePath": "",
+	"expressApp": null,
 	"port": 3001,
 
-	"sessionSecret": "some secret key",
-	"sessionHeader": "X-Session-Cookie",
+	"sessionCookieName": "session",
+	"sessionSecret": "unsecure cookie secret",
+	"sessionHeader": "X-Cookie-Session"
 
-	"expressApp": null
 }
