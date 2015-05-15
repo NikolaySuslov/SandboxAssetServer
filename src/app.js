@@ -4,34 +4,41 @@ var express = require('express'),
 	util = require('./util.js');
 
 
-function server(config)
+function router(config)
 {
-	var app = config.expressApp || express();
+	var router = express.Router();
+
+	// use CORS
+	router.use( cors() );
+	router.options('*', cors());
+
+	// attach module config object to requests
+	router.use(function(req,res,next){
+		req.assetConfig = config;
+		return next();
+	});
 
 	// parse client session, if available
-	app.use( util.headerSessions(config) );
-	app.use( cors() );
-
-	app.options('*', cors());
+	router.use( util.headerSessions );
 
 	// define routes
-	app.get('/assets/by-id/:id([0-9A-Fa-f]{8})', function(req,res,next)
+	router.get('/assets/by-id/:id([0-9A-Fa-f]{8})', function(req,res,next)
 	{
 		console.log('request by '+(req.session.username || '<anon>'));
 		res.sendStatus(200);
 	});
 
-	// start server
-	if( !config.expressApp && config.port ){
-		app.listen(config.port);
-		console.log('Started asset server on port '+config.port);
-	}
+	return router;
 }
 
-exports.server = server;
+module.exports = router;
 
 // top-level script, just start the server
 if(!module.parent)
 {
-	server( require('../config.json') );
+	var config = require('../config.json');
+	var app = express();
+	app.use(config.urlBasePath, router(config));
+	app.listen(config.port);
+	console.log('Started asset server on port '+config.port);
 }
