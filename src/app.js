@@ -1,7 +1,8 @@
 var express = require('express'),
 	cors = require('cors'),
 
-	util = require('./util.js');
+	util = require('./util.js'),
+	assets = require('./assets.js');
 
 
 function router(config)
@@ -22,11 +23,7 @@ function router(config)
 	router.use( util.headerSessions );
 
 	// define routes
-	router.get('/assets/by-id/:id([0-9A-Fa-f]{8})', function(req,res,next)
-	{
-		console.log('request by '+(req.session.username || '<anon>'));
-		res.sendStatus(200);
-	});
+	router.get('/assets/by-id/:id([0-9A-Fa-f]{8})', assets.getAsset);
 
 	return router;
 }
