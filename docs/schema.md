@@ -1,28 +1,32 @@
 Database schema
 ===============
 
-table Assets (
+```sql
+CREATE TABLE Assets (
 	id INT UNSIGNED,
-	perms INT UNSIGNED,
+	perms SMALLINT UNSIGNED,
 	owner VARCHAR(50),
 	group VARCHAR(50),
 	uploaded TIMESTAMP,
 	last_modified TIMESTAMP,
 
 	PRIMARY KEY(id)
-)
+);
 
-table Metadata (
+CREATE TABLE Metadata (
 	id INT UNSIGNED,
 	key VARCHAR(50),
 	value TEXT,
+	asset INT UNSIGNED,
 
-	PRIMARY KEY(id,key)
-)
+	PRIMARY KEY(id,key),
+	FOREIGN KEY (asset) REFERENCES Assets(id)
+);
 
-table Groups (
+CREATE TABLE Groups (
 	group VARCHAR(50),
 	user VARCHAR(50),
 
 	PRIMARY KEY(group,user)
-)
+);
+```
