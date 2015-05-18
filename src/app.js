@@ -1,4 +1,5 @@
 var express = require('express'),
+	logger = require('connect-logger'),
 	cors = require('cors'),
 
 	util = require('./util.js'),
@@ -35,6 +36,7 @@ if(!module.parent)
 {
 	var config = require('../config.json');
 	var app = express();
+	app.use(logger());
 	app.use(config.urlBasePath, router(config));
 	app.listen(config.port);
 	console.log('Started asset server on port '+config.port);
