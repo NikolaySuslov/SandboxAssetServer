@@ -1,7 +1,8 @@
 var mime = require('mime'),
 	libpath = require('path'),
 
-	storage = require('./storage.js');
+	storage = require('./storage.js'),
+	db = require('./db.js');
 
 
 function getAsset(req,res,next)
@@ -27,7 +28,7 @@ function getAsset(req,res,next)
 	});
 };
 
-function saveAsset(req,res,next)
+function newAsset(req,res,next)
 {
 	// generate random id
 	
