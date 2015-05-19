@@ -1,27 +1,34 @@
 var libpath = require('path'),
 	sqlite = require('sqlite3');
 
+var dbPath = null;
+
 function initializeDatabase(path)
 {
-	function handleError(err){
-		if(err)
-			console.error(err);
-		else
-			console.log(this);
+	dbPath = path;
+
+	function handleError(msg){
+		return function(err){
+			if(err){
+				console.error(msg);
+				console.error(err);
+			}
+		}
 	}
 
-	var db = new sqlite.Database(path);
+	var db = new sqlite.Database(dbPath);
 	db.run(
 		'CREATE TABLE IF NOT EXISTS Assets ('+
 		'	id INT UNSIGNED,'+
+		'	type VARCHAR(30) NOT NULL,'+
 		'	perms SMALLINT UNSIGNED NOT NULL,'+
-		'	owner VARCHAR(50) NOT NULL,'+
-		'	group VARCHAR(50) NOT NULL,'+
+		'	owner_name VARCHAR(50) NOT NULL,'+
+		'	group_name VARCHAR(50) NOT NULL,'+
 		'	uploaded TIMESTAMP DEFAULT now,'+
 		'	last_modified TIMESTAMP DEFAULT now,'+
 
 		'	PRIMARY KEY(id)'+
-		')', handleError)
+		')', handleError('Failed to create assets table'))
 
 	.run(
 		'CREATE TABLE IF NOT EXISTS Metadata ('+
@@ -32,17 +39,42 @@ function initializeDatabase(path)
 
 		'	PRIMARY KEY(id,key),'+
 		'	FOREIGN KEY (asset) REFERENCES Assets(id) ON DELETE CASCADE'+
-		')', handleError)
+		')', handleError('Failed to create metadata table'))
 
 	.run(
 		'CREATE TABLE IF NOT EXISTS Groups ('+
-		'	group VARCHAR(50) NOT NULL,'+
-		'	user VARCHAR(50) NOT NULL,'+
+		'	group_name VARCHAR(50) NOT NULL,'+
+		'	user_name VARCHAR(50) NOT NULL,'+
 
-		'	PRIMARY KEY(group,user)'+
-		')', handleError)
+		'	PRIMARY KEY(group_name,user_name)'+
+		')', handleError('Failed to create groups table'))
 
 	.close();
 }
 
+var db = null;
+
+function queryCurry(method)
+{
+	return function(query, params, cb)
+	{
+		if(!db)
+		{
+			db = new sqlite.Database(dbPath);
+			db[method](query,params,cb);
+			db.close();
+			db = null;
+		}
+		else
+		{
+			db[method](query,params,cb);
+		}	
+	};
+}
+
+
 exports.initialize = initializeDatabase;
+exports.queryNoResults = queryCurry('run');
+exports.queryFirstResult = queryCurry('get');
+exports.queryAllResults = queryCurry('all');
+
