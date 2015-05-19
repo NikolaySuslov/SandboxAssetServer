@@ -2,18 +2,19 @@ Database schema
 ===============
 
 ```sql
-CREATE TABLE Assets (
+CREATE TABLE IF NOT EXISTS Assets (
 	id INT UNSIGNED,
+	type VARCHAR(30) NOT NULL,
 	perms SMALLINT UNSIGNED NOT NULL,
-	owner VARCHAR(50) NOT NULL,
-	group VARCHAR(50) NOT NULL,
+	owner_name VARCHAR(50) NOT NULL,
+	group_name VARCHAR(50) NOT NULL,
 	uploaded TIMESTAMP DEFAULT now,
 	last_modified TIMESTAMP DEFAULT now,
 
 	PRIMARY KEY(id)
-);
+)
 
-CREATE TABLE Metadata (
+CREATE TABLE IF NOT EXISTS Metadata (
 	id INT UNSIGNED,
 	key VARCHAR(50),
 	value TEXT,
@@ -21,12 +22,12 @@ CREATE TABLE Metadata (
 
 	PRIMARY KEY(id,key),
 	FOREIGN KEY (asset) REFERENCES Assets(id) ON DELETE CASCADE
-);
+)
 
-CREATE TABLE Groups (
-	group VARCHAR(50),
-	user VARCHAR(50),
+CREATE TABLE IF NOT EXISTS Groups (
+	group_name VARCHAR(50) NOT NULL,
+	user_name VARCHAR(50) NOT NULL,
 
-	PRIMARY KEY(group,user)
-);
+	PRIMARY KEY(group_name,user_name)
+)
 ```

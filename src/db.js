@@ -22,7 +22,7 @@ function initializeDatabase(path)
 		'	id INT UNSIGNED,'+
 		'	type VARCHAR(30) NOT NULL,'+
 		'	perms SMALLINT UNSIGNED NOT NULL,'+
-		'	owner_name VARCHAR(50) NOT NULL,'+
+		'	user_name VARCHAR(50) NOT NULL,'+
 		'	group_name VARCHAR(50) NOT NULL,'+
 		'	uploaded TIMESTAMP DEFAULT now,'+
 		'	last_modified TIMESTAMP DEFAULT now,'+
