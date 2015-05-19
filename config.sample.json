@@ -1,6 +1,5 @@
 {
 	"urlBasePath": "/",
-	"expressApp": null,
 	"port": 3001,
 
 	"sessionCookieName": "session",

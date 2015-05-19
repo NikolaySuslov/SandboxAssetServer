@@ -1,5 +1,4 @@
 var express = require('express'),
-	logger = require('connect-logger'),
 	cors = require('cors'),
 
 	util = require('./util.js'),
@@ -25,6 +24,7 @@ function router(config)
 
 	// define routes
 	router.get('/assets/by-id/:id([0-9A-Fa-f]{8})', assets.getAsset);
+	router.post('/assets/new', assets.newAsset);
 
 	return router;
 }
@@ -34,10 +34,16 @@ module.exports = router;
 // top-level script, just start the server
 if(!module.parent)
 {
-	var config = require('../config.json');
+	var config = require('../config.json'),
+		logger = require('connect-logger');
+
 	var app = express();
 	app.use(logger());
+	app.set('x-powered-by', false);
+	app.set('etag', 'strong');
+
 	app.use(config.urlBasePath, router(config));
+
 	app.listen(config.port);
 	console.log('Started asset server on port '+config.port);
 }

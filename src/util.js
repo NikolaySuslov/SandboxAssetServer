@@ -37,4 +37,9 @@ function headerSessions(req,res,next)
 	return next();
 }
 
+function formatId(int){
+	return ('0000000'+int.toString(16)).slice(-8);
+}
+
 exports.headerSessions = headerSessions;
+exports.formatId = formatId;

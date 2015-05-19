@@ -2,7 +2,8 @@ var mime = require('mime'),
 	libpath = require('path'),
 
 	storage = require('./storage.js'),
-	db = require('./db.js');
+	db = require('./db.js'),
+	util = require('./util.js');
 
 
 function getAsset(req,res,next)
@@ -31,12 +32,16 @@ function getAsset(req,res,next)
 function newAsset(req,res,next)
 {
 	// generate random id
-	
+	var id = Math.floor( Math.random() * 0x100000000 );
+	console.log(util.formatId(id));
+
 	// save file to datadir. first two characters of id are subfolder
 	
 	// update database
 	
 	// return status
+	res.sendStatus(200);
 }
 
 exports.getAsset = getAsset;
+exports.newAsset = newAsset;
