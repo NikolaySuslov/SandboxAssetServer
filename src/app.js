@@ -1,12 +1,16 @@
 var express = require('express'),
 	cors = require('cors'),
+	libpath = require('path'),
 
 	util = require('./util.js'),
-	assets = require('./assets.js');
+	assets = require('./assets.js'),
+	db = require('./db.js');
 
 
 function router(config)
 {
+	db.initialize( libpath.join(config.dataDir, 'database.sqlite') );
+	
 	var router = express.Router();
 
 	// use CORS
