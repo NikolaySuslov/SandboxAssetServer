@@ -1,4 +1,5 @@
-var decode = require('client-sessions').util.decode;
+var decode = require('client-sessions').util.decode,
+	libpath = require('path');
 
 
 function headerSessions(req,res,next)
@@ -37,8 +38,12 @@ function headerSessions(req,res,next)
 	return next();
 }
 
-function formatId(int){
-	return ('0000000'+int.toString(16)).slice(-8);
+function formatId(int,idOnly){
+	var id = ('0000000'+int.toString(16)).slice(-8);
+	if(idOnly)
+		return id;
+	else
+		return libpath.join(id.slice(0,2), id.slice(2));
 }
 
 exports.headerSessions = headerSessions;

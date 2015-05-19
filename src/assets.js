@@ -3,16 +3,15 @@ var mime = require('mime'),
 
 	storage = require('./storage.js'),
 	db = require('./db.js'),
-	util = require('./util.js');
+	util = require('./util.js'),
+	perms = require('./perms.js');
 
 
 function getAsset(req,res,next)
 {
 	console.log('request by '+(req.session.username || '<anon>'));
 	
-	// given the id, get the filename (eventual db call)
-	var path = req.params.id.toLowerCase();
-	path = libpath.join(path.slice(0,2), path.slice(2));
+	var path = util.formatId( parseInt(req.params.id) );
 
 	// retrieve the file and serve
 	storage.readFile(req.assetConfig, path, function(err, buffer)
@@ -31,16 +30,43 @@ function getAsset(req,res,next)
 
 function newAsset(req,res,next)
 {
-	// generate random id
-	var id = Math.floor( Math.random() * 0x100000000 );
-	console.log(util.formatId(id));
+	function doStuff(inc)
+	{
+		var id = Math.floor(Math.random() * 0x100000000);
 
-	// save file to datadir. first two characters of id are subfolder
-	
-	// update database
-	
-	// return status
-	res.sendStatus(200);
+		db.queryNoResults(
+			'INSERT INTO Assets (id, type, perms, user_name, group_name) VALUES ($id, $type, $perms, $user, $user)',
+			{$id: id, $type: req.headers['content-type'], $perms: 0744, $user: req.session.username},
+			function(err,result)
+			{
+				if(err){
+					if(err.constraint && inc < 3){
+						return doStuff(inc+1);
+					}
+					else {
+						console.error(err);
+						res.sendStatus(500);
+					}
+				}
+				else
+				{
+					var path = util.formatId(id);
+					storage.writeFile(req.assetConfig, path, req.body, function(err,written,string)
+					{
+						if(err){
+							console.error(err);
+							res.sendStatus(500);
+						}
+						else {
+							res.status(200).send( util.formatId(id, true) );
+						}
+					});
+				}
+			}
+		);
+	}
+
+	doStuff(0);
 }
 
 exports.getAsset = getAsset;
