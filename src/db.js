@@ -53,22 +53,25 @@ function initializeDatabase(path)
 }
 
 var db = null;
+var refs = 0;
 
 function queryCurry(method)
 {
 	return function(query, params, cb)
 	{
-		if(!db)
-		{
+		if(!db){
 			db = new sqlite.Database(dbPath);
-			db[method](query,params,cb);
-			db.close();
-			db = null;
 		}
-		else
-		{
-			db[method](query,params,cb);
-		}	
+
+		refs++;
+		db[method](query,params,function(err,rows){
+			cb(err,rows);
+			refs--;
+			if( refs === 0 ){		
+				db.close();
+				db = null;
+			}
+		});
 	};
 }
 
