@@ -2,35 +2,35 @@ var db = require('./db.js');
 
 var perms =
 {
-	USER_READ    : 0x100,
-	USER_WRITE   : 0x080,
-	USER_DELETE  : 0x040,
+	USER_READ    : 0400,
+	USER_WRITE   : 0200,
+	USER_DELETE  : 0100,
 	
-	GROUP_READ   : 0x020,
-	GROUP_WRITE  : 0x010,
-	GROUP_DELETE : 0x008,
+	GROUP_READ   : 0040,
+	GROUP_WRITE  : 0020,
+	GROUP_DELETE : 0010,
 	
-	OTHER_READ   : 0x004
-	OTHER_WRITE  : 0x002,
-	OTHER_DELETE : 0x001,
+	OTHER_READ   : 0004,
+	OTHER_WRITE  : 0002,
+	OTHER_DELETE : 0001,
 	
-	READ         : 0x124,
-	WRITE        : 0x092,
-	DELETE       : 0x049,
+	READ         : 0444,
+	WRITE        : 0222,
+	DELETE       : 0111,
 
-	USER         : 0x1c0,
-	GROUP        : 0x038,
-	OTHER        : 0x007,
+	USER         : 0700,
+	GROUP        : 0070,
+	OTHER        : 0007
 };
 
 function hasPerm(asset, user, requestedPerms, cb)
 {
 	db.queryFirstResult(
-		'SELECT user_name = ? AS is_user, ('+
-			'SELECT COUNT(*) FROM Groups INNER JOIN Assets ON Groups.group_name = Assets.group_name WHERE Assets.id = ? AND Groups.user_name = ?'+
+		'SELECT user_name = $user AS is_user, perms, ('+
+			'SELECT COUNT(*) FROM Groups INNER JOIN Assets ON Groups.group_name = Assets.group_name WHERE Assets.id = $asset AND Groups.user_name = $user'+
 		') = 1 AS is_group, '+
-		'perms FROM Assets WHERE id = ?',
-		[user, asset, user, asset],
+		'FROM Assets WHERE id = $asset',
+		{$user: user, $asset: asset},
 		function(err, result)
 		{
 			if(err){

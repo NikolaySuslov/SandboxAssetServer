@@ -24,8 +24,8 @@ function initializeDatabase(path)
 		'	perms SMALLINT UNSIGNED NOT NULL,'+
 		'	user_name VARCHAR(50) NOT NULL,'+
 		'	group_name VARCHAR(50) NOT NULL,'+
-		'	uploaded TIMESTAMP DEFAULT now,'+
-		'	last_modified TIMESTAMP DEFAULT now,'+
+		'	uploaded TIMESTAMP DEFAULT CURRENT_TIMESTAMP,'+
+		'	last_modified TIMESTAMP DEFAULT CURRENT_TIMESTAMP,'+
 
 		'	PRIMARY KEY(id)'+
 		')', handleError('Failed to create assets table'))
@@ -64,8 +64,12 @@ function queryCurry(method)
 		}
 
 		refs++;
-		db[method](query,params,function(err,rows){
-			cb(err,rows);
+		db[method](query,params,function(err,rows)
+		{
+			if(err && err.code === 'SQLITE_CONSTRAINT')
+				err.constraint = true;
+
+			cb(err,rows||this);
 			refs--;
 			if( refs === 0 ){		
 				db.close();

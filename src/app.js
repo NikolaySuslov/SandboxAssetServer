@@ -1,5 +1,6 @@
 var express = require('express'),
 	cors = require('cors'),
+	bodyParser = require('body-parser'),
 	libpath = require('path'),
 
 	util = require('./util.js'),
@@ -12,6 +13,12 @@ function router(config)
 	db.initialize( libpath.join(config.dataDir, 'database.sqlite') );
 	
 	var router = express.Router();
+
+	// parse body
+	router.use( bodyParser.raw({
+		limit: 500000000,
+		type: '*/*'
+	}));
 
 	// use CORS
 	router.use( cors() );
