@@ -28,7 +28,7 @@ function hasPerm(asset, user, requestedPerms, cb)
 	db.queryFirstResult(
 		'SELECT perms, type, user_name = $user AS is_user, ('+
 			'SELECT COUNT(*) FROM Groups INNER JOIN Assets ON Groups.group_name = Assets.group_name WHERE Assets.id = $asset AND Groups.user_name = $user'+
-		') = 1 AS is_group, '+
+		') = 1 AS is_group '+
 		'FROM Assets WHERE id = $asset',
 		{$user: user, $asset: asset},
 		function(err, result)

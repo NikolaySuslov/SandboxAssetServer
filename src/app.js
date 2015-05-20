@@ -2,6 +2,7 @@ var express = require('express'),
 	cors = require('cors'),
 	bodyParser = require('body-parser'),
 	libpath = require('path'),
+	compress = require('compression'),
 
 	util = require('./util.js'),
 	assets = require('./assets.js'),
@@ -14,15 +15,18 @@ function router(config)
 	
 	var router = express.Router();
 
-	// parse body
-	router.use( bodyParser.raw({
-		limit: 500000000,
-		type: '*/*'
-	}));
+	// use compression
+	router.use(compress());
 
 	// use CORS
 	router.use( cors() );
 	router.options('*', cors());
+
+	// parse body
+	router.use( bodyParser.raw({
+		limit: 500e6,
+		type: '*/*'
+	}));
 
 	// attach module config object to requests
 	router.use(function(req,res,next){

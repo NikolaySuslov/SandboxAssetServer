@@ -10,32 +10,33 @@ var mime = require('mime'),
 function getAsset(req,res,next)
 {
 	console.log('request by '+(req.session.username || '<anon>'));
-
-	perms.hasPerm(req.params.id, req.session.username, perms.READ, function(err,result)
+	var id = parseInt(req.params.id, 16);
+	perms.hasPerm(id, req.session.username, perms.READ, function(err,result)
 	{
 		if(err){
-			console.error(err);
+			console.error('Error getting permission:', err);
 			res.sendStatus(500);
 		}
 		else if(result)
 		{
 			if( !result.permitted ){
+				console.log('User',req.session.username||'<anon>','not permitted by', result.perms.toString(8));
 				res.sendStatus(401);
 			}
 			else
 			{
-				var path = util.formatId( parseInt(req.params.id) );
+				var path = util.formatId(id);
 
 				// retrieve the file and serve
 				storage.readFile(req.assetConfig, path, function(err, buffer)
 				{
 					if(err){
-						console.error(err);
+						console.error('Error reading file:', err);
 						res.sendStatus(500);
 					}
 					else {
 						// set mimetype from db
-						res.set('content-type', result.type);
+						res.set('Content-Type', result.type);
 						res.status(200).send(buffer);
 					}
 				});
@@ -54,7 +55,7 @@ function newAsset(req,res,next)
 		var id = Math.floor(Math.random() * 0x100000000);
 
 		db.queryNoResults(
-			'INSERT INTO Assets (id, type, perms, user_name, group_name) VALUES ($id, $type, $perms, $user, $user)',
+			'INSERT INTO Assets (id, type, perms, user_name) VALUES ($id, $type, $perms, $user)',
 			{$id: id, $type: req.headers['content-type'], $perms: 0744, $user: req.session.username},
 			function(err,result)
 			{

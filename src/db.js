@@ -23,7 +23,7 @@ function initializeDatabase(path)
 		'	type VARCHAR(30) NOT NULL,'+
 		'	perms SMALLINT UNSIGNED NOT NULL,'+
 		'	user_name VARCHAR(50) NOT NULL,'+
-		'	group_name VARCHAR(50) NOT NULL,'+
+		'	group_name VARCHAR(50),'+
 		'	uploaded TIMESTAMP DEFAULT CURRENT_TIMESTAMP,'+
 		'	last_modified TIMESTAMP DEFAULT CURRENT_TIMESTAMP,'+
 
@@ -69,7 +69,7 @@ function queryCurry(method)
 			if(err && err.code === 'SQLITE_CONSTRAINT')
 				err.constraint = true;
 
-			cb(err,rows||this);
+			cb(err, method==='run' ? this : rows);
 			refs--;
 			if( refs === 0 ){		
 				db.close();
