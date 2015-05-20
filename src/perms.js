@@ -26,7 +26,7 @@ var perms =
 function hasPerm(asset, user, requestedPerms, cb)
 {
 	db.queryFirstResult(
-		'SELECT user_name = $user AS is_user, perms, ('+
+		'SELECT perms, type, user_name = $user AS is_user, ('+
 			'SELECT COUNT(*) FROM Groups INNER JOIN Assets ON Groups.group_name = Assets.group_name WHERE Assets.id = $asset AND Groups.user_name = $user'+
 		') = 1 AS is_group, '+
 		'FROM Assets WHERE id = $asset',
@@ -34,12 +34,15 @@ function hasPerm(asset, user, requestedPerms, cb)
 		function(err, result)
 		{
 			if(err){
-				console.error(err);
-				cb(0);
+				cb(err);
+			}
+			else if(result){
+				var privilege = (result.is_user ? perms.USER : 0) | (result.is_group ? perms.GROUP : 0) | perms.OTHER;
+				result.permitted = result.perms & requestedPerms & privilege;
+				cb( null, result );
 			}
 			else {
-				var privilege = (result.is_user ? perms.USER : 0) | (result.is_group ? perms.GROUP : 0) | perms.OTHER;
-				cb( result.perms & requestedPerms & privilege );
+				cb();
 			}
 		}
 	);

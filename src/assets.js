@@ -10,20 +10,39 @@ var mime = require('mime'),
 function getAsset(req,res,next)
 {
 	console.log('request by '+(req.session.username || '<anon>'));
-	
-	var path = util.formatId( parseInt(req.params.id) );
 
-	// retrieve the file and serve
-	storage.readFile(req.assetConfig, path, function(err, buffer)
+	perms.hasPerm(req.params.id, req.session.username, perms.READ, function(err,result)
 	{
 		if(err){
 			console.error(err);
-			res.sendStatus(404);
+			res.sendStatus(500);
+		}
+		else if(result)
+		{
+			if( !result.permitted ){
+				res.sendStatus(401);
+			}
+			else
+			{
+				var path = util.formatId( parseInt(req.params.id) );
+
+				// retrieve the file and serve
+				storage.readFile(req.assetConfig, path, function(err, buffer)
+				{
+					if(err){
+						console.error(err);
+						res.sendStatus(500);
+					}
+					else {
+						// set mimetype from db
+						res.set('content-type', result.type);
+						res.status(200).send(buffer);
+					}
+				});
+			}
 		}
 		else {
-			// set mimetype from db
-			res.set('content-type', 'text/plain');
-			res.status(200).send(buffer);
+			res.sendStatus(404);
 		}
 	});
 };
