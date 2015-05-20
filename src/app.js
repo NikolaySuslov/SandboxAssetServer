@@ -6,6 +6,7 @@ var express = require('express'),
 
 	util = require('./util.js'),
 	assets = require('./assets.js'),
+	groups = require('./groups.js'),
 	db = require('./db.js');
 
 
@@ -18,7 +19,7 @@ function router(config)
 	// use compression
 	router.use(compress({
 		filter: function(req,res){
-			return res.headers['Content-Type'] === 'application/octet-stream' || compress.filter(req,res);
+			return res.get('Content-Type') === 'application/octet-stream' || compress.filter(req,res);
 		}
 	}));
 
@@ -44,6 +45,12 @@ function router(config)
 	// define routes
 	router.get('/assets/by-id/:id([0-9A-Fa-f]{8})', assets.getAsset);
 	router.post('/assets/new', assets.newAsset);
+
+	router.post('/groups/new', groups.newGroup);
+	router.get('/groups/by-user/:user([A-Za-z][A-Za-z0-9]*)', groups.getUserMembership);
+	router.get('/groups/:gname([A-Za-z][A-Za-z0-9]*)', groups.getGroupMembership);
+	router.post('/groups/:gname([A-Za-z][A-Za-z0-9]*)/adduser', groups.addUser);
+	router.post('/groups/:gname([A-Za-z][A-Za-z0-9]*)/rmuser', groups.rmUser);
 
 	return router;
 }

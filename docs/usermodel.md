@@ -17,4 +17,4 @@ Permissions: read (4), update/replace (2), and delete (1)
 
 Permissions on uploaded models are 744 by default.
 
-Only the owner of an asset can change an asset's permissions.
+The owner of an asset can change all of an asset's permissions, and a group with write access can change group/other permissions.
