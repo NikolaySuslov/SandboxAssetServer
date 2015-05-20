@@ -45,6 +45,7 @@ function router(config)
 	// define routes
 	router.post('/assets/new', assets.newAsset);
 	router.get('/assets/by-id/:id([0-9A-Fa-f]{8})', assets.getAsset);
+	router.post('/assets/by-id/:id([0-9A-Fa-f]{8})', assets.overwriteAsset);
 
 	router.post('/groups/new', groups.newGroup);
 	router.get('/groups/by-user/:user([A-Za-z][A-Za-z0-9]*)', groups.getUserMembership);

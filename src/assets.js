@@ -17,38 +17,81 @@ function getAsset(req,res,next)
 			console.error('Error getting permission:', err);
 			res.sendStatus(500);
 		}
-		else if(result)
-		{
-			if( !result.permitted ){
-				if(req.session.username){
-					res.sendStatus(403);
-				else
-					res.sendStatus(401);
-			}
-			else
-			{
-				var path = util.formatId(id);
-
-				// retrieve the file and serve
-				storage.readFile(req.assetConfig, path, function(err, buffer)
-				{
-					if(err){
-						console.error('Error reading file:', err);
-						res.sendStatus(500);
-					}
-					else {
-						// set mimetype from db
-						res.set('Content-Type', result.type);
-						res.send(buffer);
-					}
-				});
-			}
-		}
-		else {
+		else if(!result){
 			res.sendStatus(404);
+		}
+		else if( !result.permitted ){
+			if(req.session.username)
+				res.sendStatus(403);
+			else
+				res.sendStatus(401);
+		}
+		else
+		{
+			var path = util.formatId(id);
+
+			// retrieve the file and serve
+			storage.readFile(req.assetConfig, path, function(err, buffer)
+			{
+				if(err){
+					console.error('Error reading file:', err);
+					res.sendStatus(500);
+				}
+				else {
+					// set mimetype from db
+					res.set('Content-Type', result.type);
+					res.send(buffer);
+				}
+			});
 		}
 	});
 };
+
+function overwriteAsset(req,res,next)
+{
+	var id = parseInt(req.params.id, 16);
+	perms.hasPerm(id, req.session.username, perms.WRITE, function(err,result)
+	{
+		if(err){
+			console.error('Error getting permission:', err);
+			res.sendStatus(500);
+		}
+		else if(!result){
+			res.sendStatus(404);
+		}
+		else if( !result.permitted ){
+			if(req.session.username)
+				res.sendStatus(403);
+			else
+				res.sendStatus(401);
+		}
+		else {
+			db.queryNoResults('UPDATE Assets SET last_modified = CURRENT_TIMESTAMP WHERE id = ?', [id],
+				function(err,results)
+				{
+					if(err){
+						console.error('Failed to update asset:', err);
+						res.sendStatus(500);
+					}
+					else
+					{
+						var path = util.formatId(id);
+						storage.writeFile(req.assetConfig, path, req.body, function(err,written,string)
+						{
+							if(err){
+								console.error('Failed to overwrite asset:', err);
+								res.sendStatus(500);
+							}
+							else {
+								res.sendStatus(200);
+							}
+						});
+					}
+				}
+			);
+		}
+	});
+}
 
 function newAsset(req,res,next)
 {
@@ -66,7 +109,7 @@ function newAsset(req,res,next)
 						return doStuff(inc+1);
 					}
 					else {
-						console.error(err);
+						console.error('Failed to add asset to db:', err);
 						res.sendStatus(500);
 					}
 				}
@@ -76,7 +119,7 @@ function newAsset(req,res,next)
 					storage.writeFile(req.assetConfig, path, req.body, function(err,written,string)
 					{
 						if(err){
-							console.error(err);
+							console.error('Failed to write asset to disk:', err);
 							res.sendStatus(500);
 						}
 						else {
@@ -95,4 +138,5 @@ function newAsset(req,res,next)
 }
 
 exports.getAsset = getAsset;
+exports.overwriteAsset = overwriteAsset;
 exports.newAsset = newAsset;
