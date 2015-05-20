@@ -7,6 +7,8 @@ var express = require('express'),
 	util = require('./util.js'),
 	assets = require('./assets.js'),
 	groups = require('./groups.js'),
+	metadata = require('./metadata.js'),
+	perms = require('./perms.js'),
 	db = require('./db.js');
 
 
@@ -44,9 +46,22 @@ function router(config)
 
 	// define routes
 	router.post('/assets/new', assets.newAsset);
-	router.get('/assets/by-id/:id([0-9A-Fa-f]{8})', assets.getAsset);
-	router.post('/assets/by-id/:id([0-9A-Fa-f]{8})', assets.overwriteAsset);
-	router.delete('/assets/by-id/:id([0-9A-Fa-f]{8})', assets.deleteAsset);
+	router.get('/assets/:id([0-9A-Fa-f]{8})', assets.getAsset);
+	router.post('/assets/:id([0-9A-Fa-f]{8})', assets.overwriteAsset);
+	router.delete('/assets/:id([0-9A-Fa-f]{8})', assets.deleteAsset);
+
+	router.get('/assets/:id([0-9A-Fa-f]{8})/meta/permissions', perms.getPerms);
+	router.post('/assets/:id([0-9A-Fa-f]{8})/meta/permissions', perms.setPerms);
+	router.get('/assets/:id([0-9A-Fa-f]{8})/meta/group', perms.getGroup);
+	router.post('/assets/:id([0-9A-Fa-f]{8})/meta/group', perms.setGroup);
+
+	router.get('/assets/:id([0-9A-Fa-f]{8})/meta', metadata.getAllMetadata);
+	router.get('/assets/:id([0-9A-Fa-f]{8})/meta/:field([A-Za-z][A-Za-z0-9]*)', metadata.getSomeMetadata);
+	router.post('/assets/:id([0-9A-Fa-f]{8})/meta', metadata.setAllMetadata);
+	router.post('/assets/:id([0-9A-Fa-f]{8})/meta/:field([A-Za-z][A-Za-z0-9]*)', metadata.setSomeMetadata);
+	router.delete('/assets/:id([0-9A-Fa-f]{8})/meta', metadata.deleteAllMetadata);
+	router.delete('/assets/:id([0-9A-Fa-f]{8})/meta/:field([A-Za-z][A-Za-z0-9]*)', metadata.deleteSomeMetadata);
+
 
 	router.post('/groups/new', groups.newGroup);
 	router.get('/groups/by-user/:user([A-Za-z][A-Za-z0-9]*)', groups.getUserMembership);
