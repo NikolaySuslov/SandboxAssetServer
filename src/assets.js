@@ -86,7 +86,10 @@ function newAsset(req,res,next)
 		);
 	}
 
-	doStuff(0);
+	if(req.session.username)
+		doStuff(0);
+	else
+		res.sendStatus(401);
 }
 
 exports.getAsset = getAsset;
