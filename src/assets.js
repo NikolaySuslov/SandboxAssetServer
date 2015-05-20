@@ -20,8 +20,10 @@ function getAsset(req,res,next)
 		else if(result)
 		{
 			if( !result.permitted ){
-				console.log('User',req.session.username||'<anon>','not permitted by', result.perms.toString(8));
-				res.sendStatus(401);
+				if(req.session.username){
+					res.sendStatus(403);
+				else
+					res.sendStatus(401);
 			}
 			else
 			{
@@ -37,7 +39,7 @@ function getAsset(req,res,next)
 					else {
 						// set mimetype from db
 						res.set('Content-Type', result.type);
-						res.status(200).send(buffer);
+						res.send(buffer);
 					}
 				});
 			}
@@ -78,7 +80,7 @@ function newAsset(req,res,next)
 							res.sendStatus(500);
 						}
 						else {
-							res.status(200).send( util.formatId(id, true) );
+							res.status(201).send( util.formatId(id, true) );
 						}
 					});
 				}

@@ -54,7 +54,7 @@ function newGroup(req,res,next)
 				res.sendStatus(500);
 			}
 			else if( !result.allowed ){
-				res.sendStatus(401);
+				res.sendStatus(403);
 			}
 			else
 			{
@@ -73,7 +73,7 @@ function newGroup(req,res,next)
 							}
 						}
 						else {
-							res.sendStatus(200);
+							res.sendStatus(201);
 						}
 					}
 				);
@@ -138,7 +138,7 @@ function rmUser(req,res,next)
 				res.sendStatus(304);
 			}
 			else {
-				res.sendStatus(200);
+				res.sendStatus(204);
 			}
 		}
 	);
