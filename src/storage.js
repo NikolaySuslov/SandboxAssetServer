@@ -26,5 +26,11 @@ function writeFile(config, path, data, cb)
 	});
 }
 
+function deleteFile(config, path, cb)
+{
+	fs.unlink( libpath.join(config.dataDir,path), cb );
+}
+
 exports.readFile = readFile;
 exports.writeFile = writeFile;
+exports.deleteFile = deleteFile;

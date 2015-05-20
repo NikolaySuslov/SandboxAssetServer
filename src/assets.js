@@ -93,6 +93,40 @@ function overwriteAsset(req,res,next)
 	});
 }
 
+function deleteAsset(req,res,next)
+{
+	var id = parseInt(req.params.id, 16);
+	perms.hasPerm(id, req.session.username, perms.DELETE, function(err,result)
+	{
+		if(err){
+			console.error('Error getting permission:', err);
+			res.sendStatus(500);
+		}
+		else if( !result ){
+			res.sendStatus(404);
+		}
+		else if( !result.permitted ){
+			if(req.session.username)
+				res.sendStatus(403);
+			else
+				res.sendStatus(401);
+		}
+		else
+		{
+			var path = util.formatId(id);
+			storage.deleteFile(req.assetConfig, path, function(err){
+				if(err){
+					console.error('Failed to delete asset:', err);
+					res.sendStatus(500);
+				}
+				else {
+					res.sendStatus(204);
+				}
+			});
+		}
+	});
+}
+
 function newAsset(req,res,next)
 {
 	function doStuff(inc)
@@ -139,4 +173,5 @@ function newAsset(req,res,next)
 
 exports.getAsset = getAsset;
 exports.overwriteAsset = overwriteAsset;
+exports.deleteAsset = deleteAsset;
 exports.newAsset = newAsset;
