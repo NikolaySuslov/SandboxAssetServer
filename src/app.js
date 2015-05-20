@@ -16,7 +16,11 @@ function router(config)
 	var router = express.Router();
 
 	// use compression
-	router.use(compress());
+	router.use(compress({
+		filter: function(req,res){
+			return res.headers['Content-Type'] === 'application/octet-stream' || compress.filter(req,res);
+		}
+	}));
 
 	// use CORS
 	router.use( cors() );
