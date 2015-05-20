@@ -103,8 +103,13 @@ function addUser(req,res,next)
 					function(err)
 					{
 						if(err){
-							console.error('Failed to add member to group:', err);
-							res.sendStatus(500);
+							if(err.constraint){
+								res.sendStatus(304);
+							}
+							else {
+								console.error('Failed to add member to group:', err);
+								res.sendStatus(500);
+							}
 						}
 						else {
 							res.sendStatus(200);
@@ -121,7 +126,7 @@ function rmUser(req,res,next)
 	db.queryNoResults(
 		'DELETE FROM Groups WHERE user_name = $user AND group_name = $group AND ('+
 		'	SELECT COUNT(*) FROM Groups WHERE user_name = $requester AND group_name = $group'+
-		') = 1',
+		')',
 		{$group: req.params.gname, $user: req.body.toString(), $requester: req.session.username},
 		function(err,result)
 		{
