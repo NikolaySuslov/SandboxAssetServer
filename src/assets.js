@@ -9,7 +9,6 @@ var mime = require('mime'),
 
 function getAsset(req,res,next)
 {
-	console.log('request by '+(req.session.username || '<anon>'));
 	var id = parseInt(req.params.id, 16);
 	perms.hasPerm(id, req.session.username, perms.READ, function(err,result)
 	{

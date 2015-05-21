@@ -58,6 +58,7 @@ function router(config)
 	router.post('/assets/:id([0-9A-Fa-f]{8})/meta/permissions', perms.setPerms);
 	router.get('/assets/:id([0-9A-Fa-f]{8})/meta/group', perms.getGroup);
 	router.post('/assets/:id([0-9A-Fa-f]{8})/meta/group', perms.setGroup);
+	router.delete('/assets/:id([0-9A-Fa-f]{8})/meta/group', perms.setGroup);
 
 	router.get('/assets/:id([0-9A-Fa-f]{8})/meta', metadata.getAllMetadata);
 	router.get('/assets/:id([0-9A-Fa-f]{8})/meta/:field([A-Za-z][A-Za-z0-9]*)', metadata.getSomeMetadata);
