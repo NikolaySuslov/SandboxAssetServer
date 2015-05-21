@@ -10,7 +10,15 @@
 ------------------
 
 * `GET` - Retrieves the asset. Requires read permissions on the asset.
+	* `200` - Everything okay, returns the asset.
+	* `401` - Asset does not allow anonymous access.
+	* `403` - Asset does not allow unprivileged access.
+	* `404` - No asset with this ID.
 * `POST` - Upload a file to the server to overwrite an existing asset. Requires write permissions on the asset.
+	* `200` - Asset successfully overwritten.
+	* `401` - Asset does not allow anonymous writes.
+	* `403` - Asset does not allow unprivileged writes.
+	* `404` - No asset with this ID. Use the `/assets/new` API instead.
 * `DELETE` - Destroys the asset, and all related metadata. Requires delete permissions on the asset.
 
 /assets/*asset_id*/meta/permissions

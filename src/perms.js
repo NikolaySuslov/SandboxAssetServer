@@ -100,10 +100,13 @@ function getPerms(req,res,next)
 				res.sendStatus(401);
 		}
 		else {
-			if(req.query.octal)
+			if(req.query.octal){
+				res.set('Content-Type', 'text/plain');
 				res.send( result.perms.toString(8) );
-			else
+			}
+			else {
 				res.json( unpackPerms(result.perms) );
+			}
 		}
 	});
 }
