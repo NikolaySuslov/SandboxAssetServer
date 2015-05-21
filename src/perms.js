@@ -123,8 +123,7 @@ function setPerms(req,res,next)
 			requestPerms = JSON.parse( req.body.toString() );
 		}
 		catch(e){
-			res.sendStatus(400);
-			return;
+			return res.sendStatus(400);
 		}
 
 		for(var i in requestPerms){

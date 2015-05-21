@@ -1,5 +1,6 @@
 var express = require('express'),
 	cors = require('cors'),
+	cookieParser = require('cookie-parser'),
 	bodyParser = require('body-parser'),
 	libpath = require('path'),
 	compress = require('compression'),
@@ -34,6 +35,9 @@ function router(config)
 		limit: 500e6,
 		type: '*/*'
 	}));
+
+	// parse cookies
+	router.use(cookieParser());
 
 	// attach module config object to requests
 	router.use(function(req,res,next){

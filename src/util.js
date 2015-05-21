@@ -7,12 +7,15 @@ function headerSessions(req,res,next)
 	var config = req.assetConfig;
 	req.session = {'username': null};
 
+	var cookie;
 	if( config.sessionHeader && req.headers[config.sessionHeader.toLowerCase()] )
+		cookie = req.headers[config.sessionHeader.toLowerCase()];
+	else
+		cookie = req.cookies[config.sessionCookieName];
+
+	if( cookie )
 	{
-		var result = decode(
-			{'cookieName': config.sessionCookieName, 'secret': config.sessionSecret},
-			req.headers[config.sessionHeader.toLowerCase()]
-		);
+		var result = decode( {'cookieName': config.sessionCookieName, 'secret': config.sessionSecret}, cookie );
 		result = result ? result.content : null;
 
 		if( result && result.passport && result.passport.user )
