@@ -38,7 +38,7 @@ function initializeDatabase(path)
 		'	asset INT UNSIGNED,'+
 
 		'	PRIMARY KEY(id,key),'+
-		'	FOREIGN KEY (id) REFERENCES Assets(id) ON DELETE CASCADE'+
+		'	FOREIGN KEY (id) REFERENCES Assets(id) ON DELETE CASCADE,'+
 		'	FOREIGN KEY (asset) REFERENCES Assets(id) ON DELETE SET NULL'+
 		')', handleError('Failed to create metadata table'))
 
