@@ -100,7 +100,10 @@ function getPerms(req,res,next)
 				res.sendStatus(401);
 		}
 		else {
-			res.json( unpackPerms(result.perms) );
+			if(req.query.octal)
+				res.send( result.perms.toString(8) );
+			else
+				res.json( unpackPerms(result.perms) );
 		}
 	});
 }
@@ -109,17 +112,25 @@ function setPerms(req,res,next)
 {
 	var id = parseInt(req.params.id, 16);
 	var requestPerms;
-	try {
-		requestPerms = JSON.parse( req.body.toString() );
+	if( req.query.octal ){
+		requestPerms = parseInt(req.body.toString(), 8);
+		if( isNaN(requestPerms) ){
+			return res.sendStatus(400);
+		}
 	}
-	catch(e){
-		res.sendStatus(400);
-		return;
-	}
+	else {
+		try {
+			requestPerms = JSON.parse( req.body.toString() );
+		}
+		catch(e){
+			res.sendStatus(400);
+			return;
+		}
 
-	for(var i in requestPerms){
-		for(var j in requestPerms[i]){
-			requestPerms[i][j] = !!requestPerms[i][j];
+		for(var i in requestPerms){
+			for(var j in requestPerms[i]){
+				requestPerms[i][j] = !!requestPerms[i][j];
+			}
 		}
 	}
 
@@ -134,7 +145,6 @@ function setPerms(req,res,next)
 		}
 		else
 		{
-			console.log(result);
 			var privilege = result.is_user * perms.USER | result.is_group * perms.GROUP | perms.OTHER;
 			var permitted = result.requestedPerms & privilege;
 			if( !permitted ){
@@ -144,7 +154,8 @@ function setPerms(req,res,next)
 					res.sendStatus(401);
 			}
 			else {
-				db.queryNoResults('UPDATE Assets SET perms = $perm WHERE id = $id', {$perm: packPerms(requestPerms), $id: id},
+				db.queryNoResults('UPDATE Assets SET perms = $perm WHERE id = $id',
+					{$perm: req.query.octal ? requestPerms : packPerms(requestPerms), $id: id},
 					function(err){
 						if(err){
 							console.error('Failed to update perms:', err);
