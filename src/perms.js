@@ -219,7 +219,7 @@ function setGroup(req,res,next)
 			}
 			else {
 				db.queryNoResults('UPDATE Assets SET group_name = $group WHERE id = $id', 
-					{$group: req.method === 'POST' ? req.body.toString() : '', $id: id},
+					{$group: req.method === 'POST' ? req.body.toString() : null, $id: id},
 					function(err){
 						if(err){
 							console.error('Failed to update perms:', err);
