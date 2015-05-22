@@ -1,4 +1,6 @@
-var db = require('./db.js');
+var assert = require('assert'),
+
+	db = require('./db.js');
 
 var perms =
 {
@@ -124,6 +126,7 @@ function setPerms(req,res,next)
 	else {
 		try {
 			requestPerms = JSON.parse( req.body.toString() );
+			assert( requestPerms.user && requestPerms.group && requestPerms.other, 'Permission set malformed' );
 		}
 		catch(e){
 			return res.sendStatus(400);
