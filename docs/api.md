@@ -48,34 +48,79 @@ Returns:
 /assets/*asset_id*/meta/group
 -----------------------------
 
+Manage an asset's assigned group.
+
 * `GET` - Returns the name of the group assigned to this asset.
-* `POST` - Assigns a group to the given asset. Only the asset uploader and members of a write-permitted group can set an asset's group.
+* `POST` - Assigns a group to this asset. Only the asset uploader and members of a write-permitted group can set an asset's group.
+* `DELETE` - Clears the group assigned to this asset. Equivalent to a `POST` to this endpoint with an empty body.
+
+Returns:
+
+* `200/204` - Request successful.
+* `401` - Asset does not allow anonymous access/writes/deletion.
+* `403` - Asset does not allow unprivileged access/writes/deletion.
+* `404` - No asset with this ID.
 
 /groups/new
 -----------
 
+Create a new permission group.
+
 * `POST` - Create a new group whose only member is the creator.
+
+Returns:
+
+* `201` - Group created.
+* `400` - No group name specified.
+* `401` - Anonymous clients cannot create groups.
+* `403` - There is already a group by that name.
 
 /groups/*group_name*
 --------------------
 
 * `GET` - Returns a JSON object containing the group name (`group`) and the group membership list (`members`).
 
+Returns:
+
+* `200` - Request successful.
+* `404` - No such group. Still returns an empty membership JSON object though.
+
 /groups/*group_name*/adduser
 ----------------------------
 
 * `POST` - Adds the user specified in the body of the request to the group. Can only be done by a current member of the group.
+
+Returns:
+
+* `200` - Request successful.
+* `304` - The given user is already a member of that group.
+* `400` - No user specified to add to the group.
+* `401` - Anonymous users cannot modify groups.
+* `403` - The authenticated user is not a member of the group, cannot change membership.
+* `404` - No such group.
 
 /groups/*group_name*/rmuser
 ----------------------------
 
 * `POST` - Removes the user specified in the body of the request from the group. Can only be done by a current member of the group (including the user to be removed).
 
+Returns:
+
+* `204` - User successfully removed from group.
+* `304` - Given user is not a member of this group.
+* `400` - No user specified.
+* `401` - Anonymous users cannot modify groups.
+* `403` - The authenticated user is not a member of the group, cannot change membership.
+* `404` - No such group.
+
 /groups/by-user/*user_name*
 ---------------------------
 
 * `GET` - Returns a JSON object containing the user name (`user`) and the list of groups the user is a part of (`membership`).
 
+Returns:
+
+* `200` - Request successful.
 
 Planned APIs
 ============

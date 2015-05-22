@@ -39,6 +39,7 @@ function hasPerm(asset, user, requestedPerms, cb)
 				cb(err);
 			}
 			else if(result){
+				console.log(result);
 				result.requestedPerms = requestedPerms;
 				var privilege = result.is_user * perms.USER | result.is_group * perms.GROUP | perms.OTHER;
 				result.permitted = result.perms & requestedPerms & privilege;
@@ -232,7 +233,7 @@ function setGroup(req,res,next)
 							res.sendStatus(500);
 						}
 						else {
-							res.sendStatus(200);
+							res.sendStatus( req.method === 'POST' ? 200 : 204);
 						}
 					}
 				);
