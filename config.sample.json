@@ -6,6 +6,6 @@
 	"sessionSecret": "unsecure cookie secret",
 	"sessionHeader": "X-Cookie-Session",
 
-	"dataDir": "./data"
+	"dataDir": "data"
 
 }

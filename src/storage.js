@@ -3,14 +3,14 @@ var fs = require('fs'),
 
 function readFile(config, path, cb)
 {
-	fs.readFile( libpath.join(config.dataDir, path), cb );
+	fs.readFile( libpath.join(config.absoluteDataDir, path), cb );
 }
 
 function writeFile(config, path, data, cb)
 {
-	fs.mkdir( libpath.join(config.dataDir, path.slice(0,2)), function(err)
+	fs.mkdir( libpath.join(config.absoluteDataDir, path.slice(0,2)), function(err)
 	{
-		fs.open( libpath.join(config.dataDir, path), 'w', function(err,fd)
+		fs.open( libpath.join(config.absoluteDataDir, path), 'w', function(err,fd)
 		{
 			if(err){
 				cb(err);
@@ -28,7 +28,7 @@ function writeFile(config, path, data, cb)
 
 function deleteFile(config, path, cb)
 {
-	fs.unlink( libpath.join(config.dataDir,path), cb );
+	fs.unlink( libpath.join(config.absoluteDataDir,path), cb );
 }
 
 exports.readFile = readFile;

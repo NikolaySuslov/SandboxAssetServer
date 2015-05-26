@@ -15,7 +15,8 @@ var express = require('express'),
 
 function router(config)
 {
-	db.initialize( libpath.join(config.dataDir, 'database.sqlite') );
+	var absoluteDataDir = libpath.resolve( libpath.join(__dirname, '..'), config.dataDir );
+	db.initialize( libpath.join(absoluteDataDir, 'database.sqlite') );
 	
 	var router = express.Router();
 
@@ -42,6 +43,7 @@ function router(config)
 	// attach module config object to requests
 	router.use(function(req,res,next){
 		req.assetConfig = config;
+		req.assetConfig.absoluteDataDir = absoluteDataDir;
 		return next();
 	});
 
@@ -74,6 +76,7 @@ function router(config)
 	router.post('/groups/:gname([A-Za-z][A-Za-z0-9]*)/adduser', groups.addUser);
 	router.post('/groups/:gname([A-Za-z][A-Za-z0-9]*)/rmuser', groups.rmUser);
 
+	console.log('Asset server directory is', absoluteDataDir);
 	return router;
 }
 
