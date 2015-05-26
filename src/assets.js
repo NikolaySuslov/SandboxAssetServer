@@ -14,16 +14,16 @@ function getAsset(req,res,next)
 	{
 		if(err){
 			console.error('Error getting permission:', err);
-			res.sendStatus(500);
+			res.status(500).send('DB error');
 		}
 		else if(!result){
-			res.sendStatus(404);
+			res.status(404).send('No asset with this ID');
 		}
 		else if( !result.permitted ){
 			if(req.session.username)
-				res.sendStatus(403);
+				res.status(403).send('Asset does not allow unprivileged access');
 			else
-				res.sendStatus(401);
+				res.status(401).send('Asset does not allow anonymous access');
 		}
 		else
 		{
@@ -34,7 +34,7 @@ function getAsset(req,res,next)
 			{
 				if(err){
 					console.error('Error reading file:', err);
-					res.sendStatus(500);
+					res.status(500).send('FS error');
 				}
 				else {
 					// set mimetype from db
@@ -53,16 +53,16 @@ function overwriteAsset(req,res,next)
 	{
 		if(err){
 			console.error('Error getting permission:', err);
-			res.sendStatus(500);
+			res.status(500).send('DB error');
 		}
 		else if(!result){
-			res.sendStatus(404);
+			res.status(404).send('No asset with this ID');
 		}
 		else if( !result.permitted ){
 			if(req.session.username)
-				res.sendStatus(403);
+				res.status(403).send('Asset does not allow unprivileged writes');
 			else
-				res.sendStatus(401);
+				res.status(401).send('Asset does not allow anonymous writes');
 		}
 		else {
 			db.queryNoResults('UPDATE Assets SET last_modified = CURRENT_TIMESTAMP WHERE id = ?', [id],
@@ -70,7 +70,7 @@ function overwriteAsset(req,res,next)
 				{
 					if(err){
 						console.error('Failed to update asset:', err);
-						res.sendStatus(500);
+						res.status(500).send('DB error');
 					}
 					else
 					{
@@ -79,7 +79,7 @@ function overwriteAsset(req,res,next)
 						{
 							if(err){
 								console.error('Failed to overwrite asset:', err);
-								res.sendStatus(500);
+								res.status(500).send('FS error');
 							}
 							else {
 								res.sendStatus(200);
@@ -99,16 +99,16 @@ function deleteAsset(req,res,next)
 	{
 		if(err){
 			console.error('Error getting permission:', err);
-			res.sendStatus(500);
+			res.status(500).send('DB error');
 		}
 		else if( !result ){
-			res.sendStatus(404);
+			res.status(404).send('No asset with this ID');
 		}
 		else if( !result.permitted ){
 			if(req.session.username)
-				res.sendStatus(403);
+				res.status(403).send('Asset does not allow unprivileged deletion');
 			else
-				res.sendStatus(401);
+				res.status(401).send('Asset does not allow anonymous deletion');
 		}
 		else
 		{
@@ -116,7 +116,7 @@ function deleteAsset(req,res,next)
 			storage.deleteFile(req.assetConfig, path, function(err){
 				if(err){
 					console.error('Failed to delete asset:', err);
-					res.sendStatus(500);
+					res.status(500).send('FS error');
 				}
 				else {
 					res.sendStatus(204);
@@ -143,7 +143,7 @@ function newAsset(req,res,next)
 					}
 					else {
 						console.error('Failed to add asset to db:', err);
-						res.sendStatus(500);
+						res.status(500).send('DB error');
 					}
 				}
 				else
@@ -153,7 +153,7 @@ function newAsset(req,res,next)
 					{
 						if(err){
 							console.error('Failed to write asset to disk:', err);
-							res.sendStatus(500);
+							res.status(500).send('FS error');
 						}
 						else {
 							res.status(201).send( util.formatId(id, true) );
@@ -167,7 +167,7 @@ function newAsset(req,res,next)
 	if(req.session.username)
 		doStuff(0);
 	else
-		res.sendStatus(401);
+		res.status(401).send('Cannot upload assets anonymously');
 }
 
 exports.getAsset = getAsset;

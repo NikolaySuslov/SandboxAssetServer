@@ -39,7 +39,6 @@ function hasPerm(asset, user, requestedPerms, cb)
 				cb(err);
 			}
 			else if(result){
-				console.log(result);
 				result.requestedPerms = requestedPerms;
 				var privilege = result.is_user * perms.USER | result.is_group * perms.GROUP | perms.OTHER;
 				result.permitted = result.perms & requestedPerms & privilege;
@@ -91,16 +90,16 @@ function getPerms(req,res,next)
 	{
 		if(err){
 			console.error('Failed to check permissions:', err);
-			res.sendStatus(500);
+			res.status(500).send('DB error');
 		}
 		else if(!result){
-			res.sendStatus(404);
+			res.status(404).send('No asset with this ID');
 		}
 		else if( !result.permitted ){
 			if(req.session.username)
-				res.sendStatus(403);
+				res.status(403).send('Asset does not allow unprivileged access');
 			else
-				res.sendStatus(401);
+				res.status(401).send('Asset does not allow anonymous access');
 		}
 		else {
 			if(req.query.octal){
@@ -121,7 +120,7 @@ function setPerms(req,res,next)
 	if( req.query.octal ){
 		requestPerms = parseInt(req.body.toString(), 8);
 		if( isNaN(requestPerms) ){
-			return res.sendStatus(400);
+			return res.status(400).send('Requested permissions not in the correct format');
 		}
 	}
 	else {
@@ -130,7 +129,7 @@ function setPerms(req,res,next)
 			assert( requestPerms.user && requestPerms.group && requestPerms.other, 'Permission set malformed' );
 		}
 		catch(e){
-			return res.sendStatus(400);
+			return res.status(400).send('Requested permissions not in the correct format');
 		}
 
 		for(var i in requestPerms){
@@ -144,10 +143,10 @@ function setPerms(req,res,next)
 	{
 		if(err){
 			console.error('Failed to check permissions:', err);
-			res.sendStatus(500);
+			res.status(500).send('DB error');
 		}
 		else if(!result){
-			res.sendStatus(404);
+			res.status(404).send('No asset with this ID');
 		}
 		else
 		{
@@ -155,9 +154,9 @@ function setPerms(req,res,next)
 			var permitted = result.requestedPerms & privilege;
 			if( !permitted ){
 				if(req.session.username)
-					res.sendStatus(403);
+					res.status(403).send('Only the owner of an asset can set its permissions');
 				else
-					res.sendStatus(401);
+					res.status(401).send('Anonymous clients cannot set permissions');
 			}
 			else {
 				db.queryNoResults('UPDATE Assets SET perms = $perm WHERE id = $id',
@@ -165,7 +164,7 @@ function setPerms(req,res,next)
 					function(err){
 						if(err){
 							console.error('Failed to update perms:', err);
-							res.sendStatus(500);
+							res.status(500).send('DB error');
 						}
 						else {
 							res.sendStatus(200);
@@ -184,16 +183,16 @@ function getGroup(req,res,next)
 	{
 		if(err){
 			console.error('Failed to check permissions:', err);
-			res.sendStatus(500);
+			res.status(500).send('DB error');
 		}
 		else if(!result){
-			res.sendStatus(404);
+			res.status(404).send('No asset with this ID');
 		}
 		else if( !result.permitted ){
 			if(req.session.username)
-				res.sendStatus(403);
+				res.status(403).send('Asset does not allow unprivileged access');
 			else
-				res.sendStatus(401);
+				res.status(401).send('Asset does not allow anonymous access');
 		}
 		else {
 			res.set('Content-Type', 'text/plain');
@@ -209,10 +208,10 @@ function setGroup(req,res,next)
 	{
 		if(err){
 			console.error('Failed to check permissions:', err);
-			res.sendStatus(500);
+			res.status(500).send('DB error');
 		}
 		else if(!result){
-			res.sendStatus(404);
+			res.status(404).send('No asset with this ID');
 		}
 		else
 		{
@@ -220,9 +219,9 @@ function setGroup(req,res,next)
 			var permitted = result.requestedPerms & privilege;
 			if( !permitted ){
 				if(req.session.username)
-					res.sendStatus(403);
+					res.status(403).send('Asset does not allow unprivileged writes');
 				else
-					res.sendStatus(401);
+					res.status(401).send('Asset does not allow anonymous writes');
 			}
 			else {
 				db.queryNoResults('UPDATE Assets SET group_name = $group WHERE id = $id', 
@@ -230,7 +229,7 @@ function setGroup(req,res,next)
 					function(err){
 						if(err){
 							console.error('Failed to update perms:', err);
-							res.sendStatus(500);
+							res.status(500).send('DB error');
 						}
 						else {
 							res.sendStatus( req.method === 'POST' ? 200 : 204);

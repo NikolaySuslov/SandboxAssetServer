@@ -96,7 +96,7 @@ Returns:
 * `304` - The given user is already a member of that group.
 * `400` - No user specified to add to the group.
 * `401` - Anonymous users cannot modify groups.
-* `403` - The authenticated user is not a member of the group, cannot change membership.
+* `403` - Only group members can add new members.
 * `404` - No such group.
 
 /groups/*group_name*/rmuser
