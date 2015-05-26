@@ -39,7 +39,7 @@ $ npm install --save adlnet/SandboxAssetServer.git#v1.0.0
 Add it to your Express app:
 
 ```javascript
-var SAS = require('SandboxAssetServer').router;
+var SAS = require('SandboxAssetServer');
 app.use('/my/basepath', SAS({
 	'dataDir': libpath.resolve(__datadir, 'asset_data'),
 	'sessionCookieName': 'session',
