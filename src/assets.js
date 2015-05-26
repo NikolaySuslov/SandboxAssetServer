@@ -48,48 +48,55 @@ function getAsset(req,res,next)
 
 function overwriteAsset(req,res,next)
 {
-	var id = parseInt(req.params.id, 16);
-	perms.hasPerm(id, req.session.username, perms.WRITE, function(err,result)
+	if( !req.headers['content-type'] ){
+		res.status(400).send('Uploaded assets must have a Content-Type');
+	}
+	else
 	{
-		if(err){
-			console.error('Error getting permission:', err);
-			res.status(500).send('DB error');
-		}
-		else if(!result){
-			res.status(404).send('No asset with this ID');
-		}
-		else if( !result.permitted ){
-			if(req.session.username)
-				res.status(403).send('Asset does not allow unprivileged writes');
-			else
-				res.status(401).send('Asset does not allow anonymous writes');
-		}
-		else {
-			db.queryNoResults('UPDATE Assets SET last_modified = CURRENT_TIMESTAMP WHERE id = ?', [id],
-				function(err,results)
-				{
-					if(err){
-						console.error('Failed to update asset:', err);
-						res.status(500).send('DB error');
-					}
-					else
+		var id = parseInt(req.params.id, 16);
+		perms.hasPerm(id, req.session.username, perms.WRITE, function(err,result)
+		{
+			if(err){
+				console.error('Error getting permission:', err);
+				res.status(500).send('DB error');
+			}
+			else if(!result){
+				res.status(404).send('No asset with this ID');
+			}
+			else if( !result.permitted ){
+				if(req.session.username)
+					res.status(403).send('Asset does not allow unprivileged writes');
+				else
+					res.status(401).send('Asset does not allow anonymous writes');
+			}
+			else {
+				db.queryNoResults('UPDATE Assets SET type = $type, last_modified = CURRENT_TIMESTAMP WHERE id = $id',
+					{$type: req.headers['content-type'], $id: id},
+					function(err,results)
 					{
-						var path = util.formatId(id);
-						storage.writeFile(req.assetConfig, path, req.body, function(err,written,string)
+						if(err){
+							console.error('Failed to update asset:', err);
+							res.status(500).send('DB error');
+						}
+						else
 						{
-							if(err){
-								console.error('Failed to overwrite asset:', err);
-								res.status(500).send('FS error');
-							}
-							else {
-								res.sendStatus(200);
-							}
-						});
+							var path = util.formatId(id);
+							storage.writeFile(req.assetConfig, path, req.body, function(err,written,string)
+							{
+								if(err){
+									console.error('Failed to overwrite asset:', err);
+									res.status(500).send('FS error');
+								}
+								else {
+									res.sendStatus(200);
+								}
+							});
+						}
 					}
-				}
-			);
-		}
-	});
+				);
+			}
+		});
+	}
 }
 
 function deleteAsset(req,res,next)
@@ -164,10 +171,12 @@ function newAsset(req,res,next)
 		);
 	}
 
-	if(req.session.username)
-		doStuff(0);
-	else
+	if(!req.session.username)
 		res.status(401).send('Cannot upload assets anonymously');
+	else if(!req.headers['content-type'])
+		res.status(400).send('Uploaded assets must have a Content-Type');
+	else
+		doStuff(0);
 }
 
 exports.getAsset = getAsset;

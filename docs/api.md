@@ -11,6 +11,7 @@ Upload a new asset of the type specified in the `Content-Type` request header. R
 Returns:
 
 * `201` - Asset successfully created.
+* `400` - Uploaded assets must have a Content-Type.
 * `401` - Cannot upload assets anonymously.
 
 /assets/*asset_id*
@@ -25,6 +26,7 @@ Manage a particular asset.
 Returns:
 
 * `200/204` - Request successful.
+* `400` - Uploaded assets must have a Content-Type.
 * `401` - Asset does not allow anonymous access/writes/deletion.
 * `403` - Asset does not allow unprivileged access/writes/deletion.
 * `404` - No asset with this ID.
