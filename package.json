@@ -1,10 +1,11 @@
 {
   "name": "SandboxAssetServer",
-  "version": "0.0.0",
+  "version": "1.0.0-alpha",
   "description": "A simple set of CRUD services to manage Sandbox assets",
   "main": "src/app.js",
   "directories": {
-    "doc": "docs"
+    "doc": "docs",
+	"lib": "src"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -20,8 +21,11 @@
     "crud",
     "assets"
   ],
-  "author": "Steven Vergenz",
-  "license": "Apache 2",
+  "author": {
+  	"name": "Steven Vergenz",
+	"email": "steve.vergenz.ctr@adlnet.gov"
+  },
+  "license": "Apache-2.0",
   "bugs": {
     "url": "https://github.com/adlnet/SandboxAssetServer/issues"
   },
