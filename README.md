@@ -8,30 +8,51 @@ Running As A Standalone Server
 
 Clone the git repository and install its dependencies:
 
-	~ $ git clone https://github.com/adlnet/SandboxAssetServer.git
-	~ $ cd SandboxAssetServer
-	~/SandboxAssetServer $ npm install
+```bash
+~ $ git clone https://github.com/adlnet/SandboxAssetServer.git
+~ $ cd SandboxAssetServer
+~/SandboxAssetServer $ npm install
+```
 
 Configure the new server:
 
-	~/SandboxAssetServer $ cp config.sample.json config.json
-	~/SandboxAssetServer $ nano config.json
+```bash
+~/SandboxAssetServer $ cp config.sample.json config.json
+~/SandboxAssetServer $ nano config.json
+```
 
 Run the server:
-
-	~/SandboxAssetServer $ node src/app.js
+```bash
+~/SandboxAssetServer $ node src/app.js
+```
 
 
 Running As A Node Module
 ------------------------
 
-(TBD)
+Install the server as a dependency:
+
+```bash
+$ npm install --save adlnet/SandboxAssetServer.git#v1.0.0
+```
+
+Add it to your Express app:
+
+```javascript
+var SAS = require('SandboxAssetServer').router;
+app.use('/my/basepath', SAS({
+	'dataDir': libpath.resolve(__datadir, 'asset_data'),
+	'sessionCookieName': 'session',
+	'sessionHeader': 'X-Session-Cookie',
+	'sessionSecret': 'unsecure cookie secret'
+}));
+```
 
 
 Configuration Options
 ---------------------
 
-* `dataDir` - The directory where all assets will be stored, relative to the project root.
+* `dataDir` - The directory where all assets will be stored, relative to the project root. Recommend using an absolute path for module includes.
 * `sessionCookieName` - The name of the cookie to contain the encrypted client session. Used for decryption, even if passed in the headers.
 * `sessionHeader` - The name of the header to contain the encrypted client session in case cookies are not viable.
 * `sessionSecret` - The encryption key for the client session.
