@@ -160,6 +160,7 @@ function newAsset(req,res,next)
 					{
 						if(err){
 							console.error('Failed to write asset to disk:', err);
+							db.queryNoResults('DELETE FROM Assets WHERE id = ?', id);
 							res.status(500).send('FS error');
 						}
 						else {

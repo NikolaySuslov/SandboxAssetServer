@@ -63,18 +63,18 @@ function router(config)
 	router.post('/assets/:id([0-9A-Fa-f]{8})/meta/group_name', perms.setGroup);
 	router.delete('/assets/:id([0-9A-Fa-f]{8})/meta/group_name', perms.setGroup);
 
+	router.get('/assets/:id([0-9A-Fa-f]{8})/meta/:field([A-Za-z0-9_]+)$', metadata.getSomeMetadata);
 	router.get('/assets/:id([0-9A-Fa-f]{8})/meta', metadata.getAllMetadata);
-	router.get('/assets/:id([0-9A-Fa-f]{8})/meta/:field([A-Za-z][A-Za-z0-9]*)', metadata.getSomeMetadata);
+	router.post('/assets/:id([0-9A-Fa-f]{8})/meta/:field([A-Za-z0-9_]+)$', metadata.setSomeMetadata);
 	router.post('/assets/:id([0-9A-Fa-f]{8})/meta', metadata.setAllMetadata);
-	router.post('/assets/:id([0-9A-Fa-f]{8})/meta/:field([A-Za-z][A-Za-z0-9]*)', metadata.setSomeMetadata);
+	router.delete('/assets/:id([0-9A-Fa-f]{8})/meta/:field([A-Za-z0-9_]+)$', metadata.deleteSomeMetadata);
 	router.delete('/assets/:id([0-9A-Fa-f]{8})/meta', metadata.deleteAllMetadata);
-	router.delete('/assets/:id([0-9A-Fa-f]{8})/meta/:field([A-Za-z][A-Za-z0-9]*)', metadata.deleteSomeMetadata);
 
 	router.post('/groups/new', groups.newGroup);
-	router.get('/groups/by-user/:user([A-Za-z][A-Za-z0-9]*)', groups.getUserMembership);
-	router.get('/groups/:gname([A-Za-z][A-Za-z0-9]*)', groups.getGroupMembership);
-	router.post('/groups/:gname([A-Za-z][A-Za-z0-9]*)/adduser', groups.addUser);
-	router.post('/groups/:gname([A-Za-z][A-Za-z0-9]*)/rmuser', groups.rmUser);
+	router.get('/groups/by-user/:user([A-Za-z_][A-Za-z0-9_-]*)$', groups.getUserMembership);
+	router.get('/groups/:gname([A-Za-z_][A-Za-z0-9_-]*)$', groups.getGroupMembership);
+	router.post('/groups/:gname([A-Za-z_][A-Za-z0-9_-]*)/adduser', groups.addUser);
+	router.post('/groups/:gname([A-Za-z_][A-Za-z0-9_-]*)/rmuser', groups.rmUser);
 
 	console.log('Asset server directory is', absoluteDataDir);
 	return router;

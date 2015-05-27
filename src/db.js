@@ -70,7 +70,9 @@ function queryCurry(method)
 			if(err && err.code === 'SQLITE_CONSTRAINT')
 				err.constraint = true;
 
-			cb(err, method==='run' ? this : rows);
+			if(cb)
+				cb(err, method==='run' ? this : rows);
+
 			refs--;
 			if( refs === 0 ){		
 				db.close();
