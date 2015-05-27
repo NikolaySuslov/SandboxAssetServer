@@ -52,6 +52,7 @@ function router(config)
 
 	// define routes
 	router.post('/assets/new', assets.newAsset);
+	router.get('/assets/by-user/:user([A-Za-z_][A-Za-z0-9_-]*)$', assets.listAssetsByUser);
 	router.get('/assets/:id([0-9A-Fa-f]{8})', assets.getAsset);
 	router.post('/assets/:id([0-9A-Fa-f]{8})', assets.overwriteAsset);
 	router.delete('/assets/:id([0-9A-Fa-f]{8})', assets.deleteAsset);
