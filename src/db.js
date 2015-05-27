@@ -24,7 +24,7 @@ function initializeDatabase(path)
 		'	permissions SMALLINT UNSIGNED NOT NULL,'+
 		'	user_name VARCHAR(50) NOT NULL,'+
 		'	group_name VARCHAR(50),'+
-		'	uploaded TIMESTAMP DEFAULT CURRENT_TIMESTAMP,'+
+		'	created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,'+
 		'	last_modified TIMESTAMP DEFAULT CURRENT_TIMESTAMP,'+
 
 		'	PRIMARY KEY(id)'+

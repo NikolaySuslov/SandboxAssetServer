@@ -28,7 +28,9 @@ var perms =
 function hasPerm(asset, user, requestedPerms, cb)
 {
 	db.queryFirstResult(
-		'SELECT permissions, type, user_name, group_name, uploaded, last_modified, user_name = $user AS is_user, ('+
+		'SELECT permissions, type, user_name, group_name, '+
+		'strftime("%Y-%m-%dT%H:%M:%SZ",created) AS created, strftime("%Y-%m-%dT%H:%M:%SZ",last_modified) AS last_modified, '+
+		'user_name = $user AS is_user, ('+
 			'SELECT COUNT(*) FROM Groups INNER JOIN Assets ON Groups.group_name = Assets.group_name WHERE Assets.id = $asset AND Groups.user_name = $user'+
 		') = 1 AS is_group '+
 		'FROM Assets WHERE id = $asset',
