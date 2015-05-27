@@ -237,8 +237,36 @@ function setSomeMetadata(req,res,next)
 
 function deleteAllMetadata(req,res,next)
 {
-	res.sendStatus(501);
-	
+	var id = parseInt(req.params.id, 16);
+	perms.hasPerm(id, req.session.username, perms.WRITE, function(err,result)
+	{
+		if(err){
+			console.error('Failed to check permissions:', err);
+			res.status(500).send('DB error');
+		}
+		else if(!result){
+			res.status(404).send('No asset with this ID');
+		}
+		else if( !result.permitted ){
+			if(req.session.username)
+				res.status(403).send('Asset does not allow unprivileged writes');
+			else
+				res.status(401).send('Asset does not allow anonymous writes');
+		}
+		else
+		{
+			db.queryNoResults('DELETE FROM Metadata WHERE id = $id', {$id: id}, function(err)
+			{
+				if(err){
+					console.error('Failed to clear metadata:', err);
+					res.status(500).send('DB error');
+				}
+				else {
+					res.sendStatus(204);
+				}
+			});
+		}	
+	});
 }
 
 function deleteSomeMetadata(req,res,next)
