@@ -3,6 +3,7 @@ var express = require('express'),
 	cookieParser = require('cookie-parser'),
 	bodyParser = require('body-parser'),
 	libpath = require('path'),
+	liburl = require('url'),
 	compress = require('compression'),
 
 	util = require('./util.js'),
@@ -69,7 +70,6 @@ function router(config)
 	router.delete('/assets/:id([0-9A-Fa-f]{8})/meta', metadata.deleteAllMetadata);
 	router.delete('/assets/:id([0-9A-Fa-f]{8})/meta/:field([A-Za-z][A-Za-z0-9]*)', metadata.deleteSomeMetadata);
 
-
 	router.post('/groups/new', groups.newGroup);
 	router.get('/groups/by-user/:user([A-Za-z][A-Za-z0-9]*)', groups.getUserMembership);
 	router.get('/groups/:gname([A-Za-z][A-Za-z0-9]*)', groups.getGroupMembership);
@@ -81,6 +81,7 @@ function router(config)
 }
 
 module.exports = router;
+module.exports.client = require('./client.js');
 
 // top-level script, just start the server
 if(!module.parent)
@@ -93,7 +94,8 @@ if(!module.parent)
 	app.set('x-powered-by', false);
 	app.set('etag', 'strong');
 
-	app.use(config.urlBasePath, router(config));
+	app.use(config.urlBasePath, module.exports(config));
+	app.get('/client/*', module.exports.client({}));
 
 	app.listen(config.port);
 	console.log('Started asset server on port '+config.port);
