@@ -28,7 +28,7 @@ var perms =
 function hasPerm(asset, user, requestedPerms, cb)
 {
 	db.queryFirstResult(
-		'SELECT perms, type, user_name, group_name, user_name = $user AS is_user, ('+
+		'SELECT permissions, type, user_name, group_name, uploaded, last_modified, user_name = $user AS is_user, ('+
 			'SELECT COUNT(*) FROM Groups INNER JOIN Assets ON Groups.group_name = Assets.group_name WHERE Assets.id = $asset AND Groups.user_name = $user'+
 		') = 1 AS is_group '+
 		'FROM Assets WHERE id = $asset',
@@ -41,7 +41,7 @@ function hasPerm(asset, user, requestedPerms, cb)
 			else if(result){
 				result.requestedPerms = requestedPerms;
 				var privilege = result.is_user * perms.USER | result.is_group * perms.GROUP | perms.OTHER;
-				result.permitted = result.perms & requestedPerms & privilege;
+				result.permitted = result.permissions & requestedPerms & privilege;
 				cb( null, result );
 			}
 			else {
@@ -81,36 +81,6 @@ function packPerms(permObj)
 		| permObj.other.read   * perms.OTHER_READ
 		| permObj.other.write  * perms.OTHER_WRITE
 		| permObj.other.delete * perms.OTHER_DELETE;
-}
-
-function getPerms(req,res,next)
-{
-	var id = parseInt(req.params.id, 16);
-	hasPerm(id, req.session.user, perms.READ, function(err,result)
-	{
-		if(err){
-			console.error('Failed to check permissions:', err);
-			res.status(500).send('DB error');
-		}
-		else if(!result){
-			res.status(404).send('No asset with this ID');
-		}
-		else if( !result.permitted ){
-			if(req.session.username)
-				res.status(403).send('Asset does not allow unprivileged access');
-			else
-				res.status(401).send('Asset does not allow anonymous access');
-		}
-		else {
-			if(req.query.octal){
-				res.set('Content-Type', 'text/plain');
-				res.send( result.perms.toString(8) );
-			}
-			else {
-				res.json( unpackPerms(result.perms) );
-			}
-		}
-	});
 }
 
 function setPerms(req,res,next)
@@ -176,31 +146,6 @@ function setPerms(req,res,next)
 	});
 }
 
-function getGroup(req,res,next)
-{
-	var id = parseInt(req.params.id, 16);
-	hasPerm(id, req.session.user, perms.READ, function(err,result)
-	{
-		if(err){
-			console.error('Failed to check permissions:', err);
-			res.status(500).send('DB error');
-		}
-		else if(!result){
-			res.status(404).send('No asset with this ID');
-		}
-		else if( !result.permitted ){
-			if(req.session.username)
-				res.status(403).send('Asset does not allow unprivileged access');
-			else
-				res.status(401).send('Asset does not allow anonymous access');
-		}
-		else {
-			res.set('Content-Type', 'text/plain');
-			res.send(result.group_name);
-		}
-	});
-}
-
 function setGroup(req,res,next)
 {
 	var id = parseInt(req.params.id, 16);
@@ -243,10 +188,11 @@ function setGroup(req,res,next)
 }
 
 exports.hasPerm = hasPerm;
-exports.getPerms = getPerms;
 exports.setPerms = setPerms;
-exports.getGroup = getGroup;
 exports.setGroup = setGroup;
+
+exports.packPerms = packPerms;
+exports.unpackPerms = unpackPerms;
 
 // copy perms to exports
 for(var i in perms){

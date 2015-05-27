@@ -21,7 +21,7 @@ function initializeDatabase(path)
 		'CREATE TABLE IF NOT EXISTS Assets ('+
 		'	id INT UNSIGNED,'+
 		'	type VARCHAR(30) NOT NULL,'+
-		'	perms SMALLINT UNSIGNED NOT NULL,'+
+		'	permissions SMALLINT UNSIGNED NOT NULL,'+
 		'	user_name VARCHAR(50) NOT NULL,'+
 		'	group_name VARCHAR(50),'+
 		'	uploaded TIMESTAMP DEFAULT CURRENT_TIMESTAMP,'+
@@ -39,7 +39,7 @@ function initializeDatabase(path)
 
 		'	PRIMARY KEY(id,key),'+
 		'	FOREIGN KEY (id) REFERENCES Assets(id) ON DELETE CASCADE,'+
-		'	FOREIGN KEY (asset) REFERENCES Assets(id) ON DELETE SET NULL'+
+		'	FOREIGN KEY (asset) REFERENCES Assets(id) ON DELETE CASCADE'+
 		')', handleError('Failed to create metadata table'))
 
 	.run(

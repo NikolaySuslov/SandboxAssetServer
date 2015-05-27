@@ -56,11 +56,12 @@ function router(config)
 	router.post('/assets/:id([0-9A-Fa-f]{8})', assets.overwriteAsset);
 	router.delete('/assets/:id([0-9A-Fa-f]{8})', assets.deleteAsset);
 
-	router.get('/assets/:id([0-9A-Fa-f]{8})/meta/permissions', perms.getPerms);
 	router.post('/assets/:id([0-9A-Fa-f]{8})/meta/permissions', perms.setPerms);
-	router.get('/assets/:id([0-9A-Fa-f]{8})/meta/group', perms.getGroup);
-	router.post('/assets/:id([0-9A-Fa-f]{8})/meta/group', perms.setGroup);
-	router.delete('/assets/:id([0-9A-Fa-f]{8})/meta/group', perms.setGroup);
+	router.delete('/assets/:id([0-9A-Fa-f]{8})/meta/permissions',
+		function(req,res){ res.status(403).send('Cannot clear protected field'); }
+	);
+	router.post('/assets/:id([0-9A-Fa-f]{8})/meta/group_name', perms.setGroup);
+	router.delete('/assets/:id([0-9A-Fa-f]{8})/meta/group_name', perms.setGroup);
 
 	router.get('/assets/:id([0-9A-Fa-f]{8})/meta', metadata.getAllMetadata);
 	router.get('/assets/:id([0-9A-Fa-f]{8})/meta/:field([A-Za-z][A-Za-z0-9]*)', metadata.getSomeMetadata);
@@ -68,7 +69,6 @@ function router(config)
 	router.post('/assets/:id([0-9A-Fa-f]{8})/meta/:field([A-Za-z][A-Za-z0-9]*)', metadata.setSomeMetadata);
 	router.delete('/assets/:id([0-9A-Fa-f]{8})/meta', metadata.deleteAllMetadata);
 	router.delete('/assets/:id([0-9A-Fa-f]{8})/meta/:field([A-Za-z][A-Za-z0-9]*)', metadata.deleteSomeMetadata);
-
 
 	router.post('/groups/new', groups.newGroup);
 	router.get('/groups/by-user/:user([A-Za-z][A-Za-z0-9]*)', groups.getUserMembership);

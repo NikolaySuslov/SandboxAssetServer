@@ -140,7 +140,7 @@ function newAsset(req,res,next)
 		var id = Math.floor(Math.random() * 0x100000000);
 
 		db.queryNoResults(
-			'INSERT INTO Assets (id, type, perms, user_name) VALUES ($id, $type, $perms, $user)',
+			'INSERT INTO Assets (id, type, permissions, user_name) VALUES ($id, $type, $perms, $user)',
 			{$id: id, $type: req.headers['content-type'], $perms: 0744, $user: req.session.username},
 			function(err,result)
 			{
