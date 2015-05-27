@@ -181,35 +181,7 @@ function newAsset(req,res,next)
 }
 
 
-function listAssetsByUser(req,res,next)
-{
-	db.queryAllResults('SELECT PRINTF("%x",id) AS id,type,PRINTF("%o",permissions) AS permissions,user_name,group_name,created,last_modified FROM Assets WHERE user_name = ?', [req.params.user],
-		function(err,rows)
-		{
-			if(err){
-				console.error('Failed to get by-owner index:', err);
-				res.status(500).send('DB error');
-			}
-			else
-			{
-				var ret = {
-					'user_name': req.params.user,
-					'assets': {}
-				};
-
-				for(var i=0; i<rows.length; i++){
-					ret.assets[ rows[i].id ] = rows[i];
-				}
-
-				res.json(ret);
-			}
-		}
-	);
-}
-
-
 exports.getAsset = getAsset;
 exports.overwriteAsset = overwriteAsset;
 exports.deleteAsset = deleteAsset;
 exports.newAsset = newAsset;
-exports.listAssetsByUser = listAssetsByUser;

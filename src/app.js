@@ -7,6 +7,7 @@ var express = require('express'),
 
 	util = require('./util.js'),
 	assets = require('./assets.js'),
+	query = require('./query.js'),
 	groups = require('./groups.js'),
 	metadata = require('./metadata.js'),
 	perms = require('./perms.js'),
@@ -52,10 +53,12 @@ function router(config)
 
 	// define routes
 	router.post('/assets/new', assets.newAsset);
-	router.get('/assets/by-user/:user([A-Za-z_][A-Za-z0-9_-]*)$', assets.listAssetsByUser);
 	router.get('/assets/:id([0-9A-Fa-f]{8})', assets.getAsset);
 	router.post('/assets/:id([0-9A-Fa-f]{8})', assets.overwriteAsset);
 	router.delete('/assets/:id([0-9A-Fa-f]{8})', assets.deleteAsset);
+
+	router.get('/assets/by-user/:user([A-Za-z_][A-Za-z0-9_-]*)$', query.listAssetsByUser);
+	router.get('/assets/by-meta/', query.listAssetsByMeta);
 
 	router.post('/assets/:id([0-9A-Fa-f]{8})/meta/permissions', perms.setPerms);
 	router.delete('/assets/:id([0-9A-Fa-f]{8})/meta/permissions',
