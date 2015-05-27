@@ -149,8 +149,48 @@ function deleteAllMetadata(req,res,next)
 
 function deleteSomeMetadata(req,res,next)
 {
-	res.sendStatus(501);
-	
+	var id = parseInt(req.params.id, 16);
+	if( ['permissions','group_name','type','user_name','uploaded','last_modified'].indexOf(req.params.field) > -1 ){
+		res.status(403).send('Cannot clear protected field');
+	}
+	else
+	{
+		perms.hasPerm(id, req.session.username, perms.WRITE, function(err,result)
+		{
+			if(err){
+				console.error('Failed to check permissions:', err);
+				res.status(500).send('DB error');
+			}
+			else if(!result){
+				res.status(404).send('No asset with this ID');
+			}
+			else if( !result.permitted ){
+				if(req.session.username)
+					res.status(403).send('Asset does not allow unprivileged writes');
+				else
+					res.status(401).send('Asset does not allow anonymous writes');
+			}
+			else
+			{
+				db.queryNoResults('DELETE FROM Metadata WHERE id = $id AND key = $key', {$id: id, $key: req.params.field },
+					function(err,result)
+					{
+						if(err){
+							console.error('Failed to clear metadata:', err);
+							res.status(500).send('DB error');
+						}
+						else if( result.changes === 0 ){
+							res.status(404).send('No metadata for this asset with that name');
+						}
+						else {
+							res.sendStatus(204);
+						}
+					}
+				);
+			}
+		});
+	}
+
 }
 
 exports.getAllMetadata = getAllMetadata;
