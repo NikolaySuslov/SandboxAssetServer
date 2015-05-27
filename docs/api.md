@@ -31,21 +31,57 @@ Returns:
 * `403` - Asset does not allow unprivileged access/writes/deletion.
 * `404` - No asset with this ID.
 
-/assets/*asset_id*/meta/permissions
------------------------------------
 
-Manage an asset's permissions. This endpoint can accept/return either a JSON representation of the asset's permission set, or a UNIX-style octal integer representation, as determined by the truthiness of the query argument `octal`. See the [permissions](../src/perms.js#L5) [module](../src/perms.js#L54) for details on how this value is de/constructed.
+/assets/*asset_id*/meta \[?octal=true\]
+---------------------------------------
+
+Manage arbitrary metadata about an asset. This endpoint exposes several pieces of protected read-only metadata: `type`, `permissions`, `user_name`, `group_name`, `created`, and `last_modified`.
+
+If the value of a field is of the form `asset:<8 hex digits>`, it is considered to be an asset reference. See below for details.
+
+* `GET` - Returns a JSON object containing all the metadata about the asset, including protected fields. The format of the `permissions` field can be chosen with the query argument `octal`, as documented below.
+* `POST` - Accepts a JSON object. Merge the old set of metadata with the given object, keeping protected fields unchanged. Returns status code only.
+* `DELETE` - Deletes all non-protected metadata for the given asset. Returns status code only.
+
+Returns:
+
+* `200/204` - Request successful.
+* `400` - (`POST` only) Request body is not a valid JSON object.
+* `401` - Asset does not allow anonymous access/writes.
+* `403` - Asset does not allow unprivileged access/writes.
+* `404` - No asset with this ID.
+
+
+/assets/*asset_id*/meta/*key* \[?raw=true\]
+-------------------------------------------
+
+Manage a particular piece of metadata about the asset identified by *key*. This endpoint exposes several pieces of protected read-only metadata: `type`, `user_name`, `created`, and `last_modified`. Unlike the en masse metadata endpoint, this one can set the protected fields `permissions` and `group_name`. See below for more information.
+
+If the value of the given piece of metadata is of the form `asset:<8 hex digits>`, it is considered to be an asset reference. `GET` requests to metadata referencing an asset will redirect to that asset unless the `raw` query argument is truthy.
+
+For example, if you set a piece of metadata to the string `asset:deadbeef`, and `GET` it, the request will be 302 redirected to `/assets/deadbeef` without the `raw` argument, and will just return `asset:deadbeef` with it.
+
+* `GET` - Returns a particular piece of metadata about the asset.
+* `POST` - Update a particular piece of metadata. Returns status code only.
+* `DELETE` - Delete the given piece of metadata for the given asset. Returns status code only.
+
+Returns:
+
+* `200/204` - Request successful.
+* `400` - (`POST` only) New metadata value not specified, or of the incorrect format.
+* `401` - Asset does not allow anonymous access/writes/deletion.
+* `403` - Asset does not allow unprivileged access/writes/deletion, or else the specified field is protected.
+* `404` - No asset with this ID.
+
+
+/assets/*asset_id*/meta/permissions \[?octal=true\]
+---------------------------------------------------
+
+Manage an asset's permissions. This endpoint can accept/return either a JSON representation of the asset's permission set, or a UNIX-style octal integer representation, as determined by the truthiness of the query argument `octal`. See the permissions module [here](../src/perms.js#L5) and [here](../src/perms.js#L56) for details on how this value is de/constructed.
 
 * `GET` - Returns the asset's permissions.
 * `POST` - Sets the permissions on the asset to the given permission set. Note that only the asset uploader and members of a write-permitted group can set permissions.
 
-Returns:
-
-* `200` - Request successful.
-* `400` - (`POST` only) Request body is not a valid permission specifier.
-* `401` - Anonymous clients cannot set permissions.
-* `403` - Only the owner of an asset can set its permissions.
-* `404` - No asset with this ID.
 
 /assets/*asset_id*/meta/group
 -----------------------------
@@ -56,12 +92,6 @@ Manage an asset's assigned group.
 * `POST` - Assigns a group to this asset. Only the asset uploader and members of a write-permitted group can set an asset's group.
 * `DELETE` - Clears the group assigned to this asset. Equivalent to a `POST` to this endpoint with an empty body.
 
-Returns:
-
-* `200/204` - Request successful.
-* `401` - Asset does not allow anonymous access/writes/deletion.
-* `403` - Asset does not allow unprivileged access/writes/deletion.
-* `404` - No asset with this ID.
 
 /groups/new
 -----------
@@ -126,20 +156,6 @@ Returns:
 
 Planned APIs
 ============
-
-/assets/*asset_id*/meta
--------------------------
-
-* `GET` - Returns a JSON object containing all the metadata about the asset.
-* `POST` - Accepts a JSON object. Merge the old set of metadata with the given object, keeping protected fields unchanged. Returns the updated metadata.
-* `DELETE` - Delete all user-set metadata for the given asset. Returns status code only.
-
-/assets/*asset_id*/meta/*key*
------------------------------
-
-* `GET` - Returns a particular piece or pieces of metadata about the asset, e.g. owner, upload date, format, etc.
-* `POST` - Update a particular piece of metadata. Returns the new value.
-* `DELETE` - Delete the given piece of metadata for the given asset. Returns status code only.
 
 /assets/by-user/*user_name*
 ---------------------------
