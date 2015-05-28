@@ -72,42 +72,71 @@ function unpackPerms(permInt)
 
 function packPerms(permObj)
 {
-	return permObj.user.read   * perms.USER_READ
-		| permObj.user.write   * perms.USER_WRITE
-		| permObj.user.delete  * perms.USER_DELETE
+	return {
+		newPerms: 
+			(!!permObj.user ? (
+				!!permObj.user.read    * perms.USER_READ |
+				!!permObj.user.write   * perms.USER_WRITE |
+				!!permObj.user.delete  * perms.USER_DELETE
+			) : 0) |
 
-		| permObj.group.read   * perms.GROUP_READ
-		| permObj.group.write  * perms.GROUP_WRITE
-		| permObj.group.delete * perms.GROUP_DELETE
+			(!!permObj.group ? (
+				!!permObj.group.read   * perms.GROUP_READ |
+				!!permObj.group.write  * perms.GROUP_WRITE |
+				!!permObj.group.delete * perms.GROUP_DELETE
+			) : 0) |
 
-		| permObj.other.read   * perms.OTHER_READ
-		| permObj.other.write  * perms.OTHER_WRITE
-		| permObj.other.delete * perms.OTHER_DELETE;
+			(!!permObj.other ? (
+				!!permObj.other.read   * perms.OTHER_READ |
+				!!permObj.other.write  * perms.OTHER_WRITE |
+				!!permObj.other.delete * perms.OTHER_DELETE
+			) : 0)
+		,
+
+		given:
+			(permObj.user ? (
+				(permObj.user.read    !== undefined) * perms.USER_READ |
+				(permObj.user.write   !== undefined) * perms.USER_WRITE |
+				(permObj.user.delete  !== undefined) * perms.USER_DELETE
+			) : 0) |
+
+			(permObj.group ? (
+				(permObj.group.read   !== undefined) * perms.GROUP_READ |
+				(permObj.group.write  !== undefined) * perms.GROUP_WRITE |
+				(permObj.group.delete !== undefined) * perms.GROUP_DELETE
+			) : 0) |
+
+			(permObj.other ? (
+				(permObj.other.read   !== undefined) * perms.OTHER_READ |
+				(permObj.other.write  !== undefined) * perms.OTHER_WRITE |
+				(permObj.other.delete !== undefined) * perms.OTHER_DELETE
+			) : 0)
+	};
 }
 
 function setPerms(req,res,next)
 {
 	var id = parseInt(req.params.id, 16);
 	var requestPerms;
-	if( req.query.octal ){
+	if( req.query.permFormat !== 'json' )
+	{
 		requestPerms = parseInt(req.body.toString(), 8);
 		if( isNaN(requestPerms) ){
 			return res.status(400).send('Requested permissions not in the correct format');
 		}
 	}
-	else {
+	else
+	{
 		try {
 			requestPerms = JSON.parse( req.body.toString() );
-			assert( requestPerms.user && requestPerms.group && requestPerms.other, 'Permission set malformed' );
 		}
 		catch(e){
 			return res.status(400).send('Requested permissions not in the correct format');
 		}
 
-		for(var i in requestPerms){
-			for(var j in requestPerms[i]){
-				requestPerms[i][j] = !!requestPerms[i][j];
-			}
+		requestPerms = packPerms(requestPerms);
+		if( !requestPerms.given ){
+			return res.status(400).send('No permissions given');
 		}
 	}
 
@@ -130,9 +159,17 @@ function setPerms(req,res,next)
 				else
 					res.status(401).send('Anonymous clients cannot set permissions');
 			}
-			else {
-				db.queryNoResults('UPDATE Assets SET perms = $perm WHERE id = $id',
-					{$perm: req.query.octal ? requestPerms : packPerms(requestPerms), $id: id},
+			else
+			{
+				var params = {$id: id};
+				if(req.query.permFormat === 'json'){
+					var n = requestPerms.newPerms, s = requestPerms.given, o = result.permissions;
+					params.$perm = n&(o|s) | o&~n&~s;
+				}
+				else
+					params.$perm = requestPerms;
+
+				db.queryNoResults('UPDATE Assets SET permissions = $perm WHERE id = $id', params,
 					function(err){
 						if(err){
 							console.error('Failed to update perms:', err);

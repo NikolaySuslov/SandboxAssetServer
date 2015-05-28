@@ -37,13 +37,13 @@ Returns:
 Metadata Management
 -------------------
 
-### /assets/*asset_id*/meta \[?octal=true\]
+### /assets/*asset_id*/meta \[?permFormat=json\]
 
 Manage arbitrary metadata about an asset. This endpoint exposes several pieces of protected read-only metadata: `type`, `permissions`, `user_name`, `group_name`, `created`, and `last_modified`.
 
 If the value of a field is of the form `asset:<8 hex digits>`, it is considered to be an asset reference. See below for details.
 
-* `GET` - Returns a JSON object containing all the metadata about the asset, including protected fields. The format of the `permissions` field can be chosen with the query argument `octal`, as documented below.
+* `GET` - Returns a JSON object containing all the metadata about the asset, including protected fields. The format of the `permissions` field can be chosen with the query argument `permFormat`, as documented below.
 * `POST` - Accepts a JSON object. Merge the old set of metadata with the given object, keeping protected fields unchanged. Returns status code only.
 * `DELETE` - Deletes all non-protected metadata for the given asset. Returns status code only.
 
@@ -77,9 +77,9 @@ Returns:
 * `404` - No asset with this ID.
 
 
-### /assets/*asset_id*/meta/permissions \[?octal=true\]
+### /assets/*asset_id*/meta/permissions \[?permFormat=json\]
 
-Manage an asset's permissions. This endpoint can accept/return either a JSON representation of the asset's permission set, or a UNIX-style octal integer representation, as determined by the truthiness of the query argument `octal`. See the permissions module [here](../src/perms.js#L5) and [here](../src/perms.js#L56) for details on how this value is de/constructed.
+Manage an asset's permissions. This endpoint accepts/returns a UNIX-style octal integer permission representation, or alternatively a JSON representation of the asset's permission set if the query argument `permFormat` is set to `json`. See the permissions module [here](../src/perms.js#L5) and [here](../src/perms.js#L56) for details on how the packed octal value is de/constructed.
 
 * `GET` - Returns the asset's permissions.
 * `POST` - Sets the permissions on the asset to the given permission set. Note that only the asset uploader and members of a write-permitted group can set permissions.
@@ -116,7 +116,7 @@ Retrieve a list of assets whose protected and user-defined metadata satisfies an
 	comparison_operator ::= "equal" | "notEqual" | "greaterThan" | "greaterEqual"
 		| "lessThan" | "lessEqual" | "like" ;
 
-If a comparison operator is not specified, the default operator is `equal`, and criteria with invalid operators are discarded. Additional `ignored` text can be added if you need to make the query argument name unique, as required by the query string standard.
+If a comparison operator is not specified, the default operator is `equal`, and criteria with invalid operators are discarded. Additional `ignored` text can be added if you need to make the query argument name unique, as required by the query string standard. Asset references can be specified using the usual `asset:id` format. Date/time formats are flexible, and anything parsable by [Date.parse](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/parse) is acceptable, but ISO-8601 dates are recommended.
 
 So for example, if you wanted all JPEG assets from a particular user, you could query it like so (except URL-encoded):
 

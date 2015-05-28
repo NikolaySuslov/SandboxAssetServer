@@ -35,7 +35,7 @@ function getAllMetadata(req,res,next)
 					{
 						var meta = {
 							'type': result.type,
-							'permissions': req.query.octal ? result.permissions.toString(8) : perms.unpackPerms(result.permissions),
+							'permissions': req.query.permFormat === 'json' ? perms.unpackPerms(result.permissions) : result.permissions.toString(8),
 							'user_name': result.user_name,
 							'group_name': result.group_name,
 							'created': result.created,
@@ -75,7 +75,7 @@ function getSomeMetadata(req,res,next)
 		else if( ['type','permissions','user_name','group_name','created','last_modified'].indexOf(req.params.field) > -1 )
 		{
 			if( req.params.field === 'permissions' ){
-				if( !req.query.octal ){
+				if( req.query.permFormat === 'json' ){
 					res.json( perms.unpackPerms(result.permissions) );
 				}
 				else {
