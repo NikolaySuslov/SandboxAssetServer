@@ -20,7 +20,7 @@ function initializeDatabase(path)
 	db.run(
 		'CREATE TABLE IF NOT EXISTS Assets ('+
 		'	id INT UNSIGNED,'+
-		'	type VARCHAR(30) NOT NULL,'+
+		'	type VARCHAR(50) NOT NULL,'+
 		'	permissions SMALLINT UNSIGNED NOT NULL,'+
 		'	user_name VARCHAR(50) NOT NULL,'+
 		'	group_name VARCHAR(50),'+
