@@ -79,10 +79,10 @@ Returns:
 
 ### /assets/*asset_id*/meta/permissions \[?permFormat=json\]
 
-Manage an asset's permissions. This endpoint accepts/returns a UNIX-style octal integer permission representation, or alternatively a JSON representation of the asset's permission set if the query argument `permFormat` is set to `json`. See the permissions module [here](../src/perms.js#L5) and [here](../src/perms.js#L56) for details on how the packed octal value is de/constructed.
+Manage an asset's permissions. This endpoint accepts/returns a UNIX-style octal integer permission representation, or alternatively a JSON representation of the asset's permission set if the query argument `permFormat` is set to `json`. See the permissions module [here](../src/perms.js#L5) and [here](../src/perms.js#L56) for details on how the two representations are converted.
 
 * `GET` - Returns the asset's permissions.
-* `POST` - Sets the permissions on the asset to the given permission set. Note that only the asset uploader and members of a write-permitted group can set permissions.
+* `POST` - Sets the permissions on the asset to the given permission set. If a sparse JSON object (i.e. does not have every permission) is POSTed, it will be merged with the current permission set. Note that only the asset uploader and members of a write-permitted group can set permissions.
 
 
 ### /assets/*asset_id*/meta/group
