@@ -1,8 +1,10 @@
 ﻿Asset Server APIs
 =================
 
-/assets/new
------------
+Asset Management
+----------------
+
+### /assets/new
 
 Upload a new asset of the type specified in the `Content-Type` request header. Requires a login.
 
@@ -14,8 +16,8 @@ Returns:
 * `400` - Uploaded assets must have a Content-Type.
 * `401` - Cannot upload assets anonymously.
 
-/assets/*asset_id*
-------------------
+
+### /assets/*asset_id*
 
 Manage a particular asset.
 
@@ -32,8 +34,10 @@ Returns:
 * `404` - No asset with this ID.
 
 
-/assets/*asset_id*/meta \[?octal=true\]
----------------------------------------
+Metadata Management
+-------------------
+
+### /assets/*asset_id*/meta \[?octal=true\]
 
 Manage arbitrary metadata about an asset. This endpoint exposes several pieces of protected read-only metadata: `type`, `permissions`, `user_name`, `group_name`, `created`, and `last_modified`.
 
@@ -52,8 +56,7 @@ Returns:
 * `404` - No asset with this ID.
 
 
-/assets/*asset_id*/meta/*key* \[?raw=true\]
--------------------------------------------
+### /assets/*asset_id*/meta/*key* \[?raw=true\]
 
 Manage a particular piece of metadata about the asset identified by *key*. This endpoint exposes several pieces of protected read-only metadata: `type`, `user_name`, `created`, and `last_modified`. Unlike the en masse metadata endpoint, this one can set the protected fields `permissions` and `group_name`. See below for more information.
 
@@ -74,8 +77,7 @@ Returns:
 * `404` - No asset with this ID.
 
 
-/assets/*asset_id*/meta/permissions \[?octal=true\]
----------------------------------------------------
+### /assets/*asset_id*/meta/permissions \[?octal=true\]
 
 Manage an asset's permissions. This endpoint can accept/return either a JSON representation of the asset's permission set, or a UNIX-style octal integer representation, as determined by the truthiness of the query argument `octal`. See the permissions module [here](../src/perms.js#L5) and [here](../src/perms.js#L56) for details on how this value is de/constructed.
 
@@ -83,8 +85,7 @@ Manage an asset's permissions. This endpoint can accept/return either a JSON rep
 * `POST` - Sets the permissions on the asset to the given permission set. Note that only the asset uploader and members of a write-permitted group can set permissions.
 
 
-/assets/*asset_id*/meta/group
------------------------------
+### /assets/*asset_id*/meta/group
 
 Manage an asset's assigned group.
 
@@ -93,8 +94,52 @@ Manage an asset's assigned group.
 * `DELETE` - Clears the group assigned to this asset. Equivalent to a `POST` to this endpoint with an empty body.
 
 
-/groups/new
------------
+Search
+------
+
+### /assets/by-user/*user_name*
+
+Retrieve a list of assets owned by a particular user. This is functionally identical to `/assets/by-meta/all-of?user_name=<user_name>`.
+
+* `GET` - Returns a JSON object containing the user name (`user_name`) and an object (`assets`) mapping asset IDs to other objects containing a minimum set of asset metadata. An asset is described here by its metadata `id`, `type`, `permissions`, `user_name`, `group_name`, `created`, and `last_update`.
+
+Returns:
+
+* `200` - Request successful.
+
+
+### /assets/by-meta/any-of, all-of \[?query_args\]
+
+Retrieve a list of assets whose protected and user-defined metadata satisfies any of, or all of, a set of criteria. Each query argument describes a single criterion according to the following syntax:
+
+	criterion ::= meta_name ["!" comparison_operator ["!" ignored] ] "=" meta_value ;
+	comparison_operator ::= "equal" | "notEqual" | "greaterThan" | "greaterEqual"
+		| "lessThan" | "lessEqual" | "like" ;
+
+So for example, if you wanted all JPEG assets from a particular user, you could query it like so (except URL-encoded):
+
+	GET /assets/by-meta/all-of?type!equal=image/jpeg&user_name=user
+
+Notice that the second criterion does not specify an operator, because it is optional. When omitted, the operator is assumed to be `equal`.
+
+You can also search for assets that match at least one criterion instead of all of them by using the `any-of` endpoint:
+
+	GET /assets/by-meta/any-of?type!equal!0=image/jpeg&type!equal!1=image/png
+
+This query will return any JPEG or PNG assets. Notice that since I'm querying the same piece of metadata twice with the same operator, I need to add a garbage identifier to make the query arguments unique, as required by RFC3986.
+
+* `GET` - Returns a JSON object containing the input query (`query`), and the matching assets (`matches`) as an object. This object is of identical structure to that returned by the `by-user` endpoint.
+
+Returns:
+
+* `200` - Request successful.
+* `400` - Must supply at least one valid query argument.
+
+
+Group Management
+----------------
+
+### /groups/new
 
 Create a new permission group.
 
@@ -107,18 +152,18 @@ Returns:
 * `401` - Anonymous clients cannot create groups.
 * `403` - There is already a group by that name.
 
-/groups/*group_name*
---------------------
 
-* `GET` - Returns a JSON object containing the group name (`group`) and the group membership list (`members`).
+### /groups/*group_name*
+
+* `GET` - Returns a JSON object containing the group name (`group_name`) and the group membership list (`members`).
 
 Returns:
 
 * `200` - Request successful.
 * `404` - No such group. Still returns an empty membership JSON object though.
 
-/groups/*group_name*/adduser
-----------------------------
+
+### /groups/*group_name*/adduser
 
 * `POST` - Adds the user specified in the body of the request to the group. Can only be done by a current member of the group.
 
@@ -131,8 +176,8 @@ Returns:
 * `403` - Only group members can add new members.
 * `404` - No such group.
 
-/groups/*group_name*/rmuser
-----------------------------
+
+### /groups/*group_name*/rmuser
 
 * `POST` - Removes the user specified in the body of the request from the group. Can only be done by a current member of the group (including the user to be removed).
 
@@ -145,19 +190,11 @@ Returns:
 * `403` - The authenticated user is not a member of the group, cannot change membership.
 * `404` - No such group.
 
-/groups/by-user/*user_name*
----------------------------
 
-* `GET` - Returns a JSON object containing the user name (`user`) and the list of groups the user is a part of (`membership`).
+### /groups/by-user/*user_name*
+
+* `GET` - Returns a JSON object containing the user name (`user_name`) and the list of groups the user is a part of (`membership`).
 
 Returns:
 
 * `200` - Request successful.
-
-Planned APIs
-============
-
-/assets/by-user/*user_name*
----------------------------
-
-* `GET` - Returns a JSON array of URLs to assets uploaded by the given user.

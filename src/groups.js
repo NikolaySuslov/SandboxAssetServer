@@ -11,12 +11,12 @@ function getGroupMembership(req,res,next)
 		else
 		{
 			if(rows.length === 0){
-				res.status(404).json({'group': req.params.gname, 'members':[]});
+				res.status(404).json({'group_name': req.params.gname, 'members':[]});
 			}
 			else
 			{
 				res.json({
-					'group': req.params.gname,
+					'group_name': req.params.gname,
 					'members': rows.reduce(function(sum,cur){return sum.concat(cur.user_name);}, [])
 				});
 			}
@@ -35,7 +35,7 @@ function getUserMembership(req,res,next)
 			}
 			else {
 				res.json({
-					'user': req.params.user,
+					'user_name': req.params.user,
 					'membership': rows.reduce(function(sum,cur){return sum.concat(cur.group_name);}, [])
 				});
 			}

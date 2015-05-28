@@ -39,14 +39,14 @@ function listAssetsByMeta(req,res,next)
 
 	var whereClause = '';
 
-	for(var key in req.query)
+	for(var i in req.query)
 	{
-		var val = req.query[key];
+		var val = req.query[i];
 		var wherePhrase;
 
 		// parse the operator, if one is provided
-		var parts = key.split('!'), operator;
-		key = parts[0], operator = parts[1];
+		var parts = i.split('!');
+		var key = parts[0], operator = parts[1];
 		console.log(key, operator, val);
 		switch(operator)
 		{
@@ -59,7 +59,7 @@ function listAssetsByMeta(req,res,next)
 			case 'lessEqual':    operator = ' <= ';   break;
 			case 'like':         operator = ' LIKE '; break;
 
-			default: continue;
+			default: delete req.query[i]; continue;
 		}
 
 		// parse value, if it requires parsing
@@ -91,7 +91,7 @@ function listAssetsByMeta(req,res,next)
 
 	console.log(whereClause);
 	if(!whereClause){
-		return res.status(400).send('Must supply at least one valid query');
+		return res.status(400).send('Must supply at least one valid query argument');
 	}
 
 	db.queryAllResults(
