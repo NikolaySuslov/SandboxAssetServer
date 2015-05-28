@@ -116,17 +116,17 @@ Retrieve a list of assets whose protected and user-defined metadata satisfies an
 	comparison_operator ::= "equal" | "notEqual" | "greaterThan" | "greaterEqual"
 		| "lessThan" | "lessEqual" | "like" ;
 
+If a comparison operator is not specified, the default operator is `equal`, and criteria with invalid operators are discarded. Additional `ignored` text can be added if you need to make the query argument name unique, as required by the query string standard.
+
 So for example, if you wanted all JPEG assets from a particular user, you could query it like so (except URL-encoded):
 
 	GET /assets/by-meta/all-of?type!equal=image/jpeg&user_name=user
-
-Notice that the second criterion does not specify an operator, because it is optional. When omitted, the operator is assumed to be `equal`.
 
 You can also search for assets that match at least one criterion instead of all of them by using the `any-of` endpoint:
 
 	GET /assets/by-meta/any-of?type!equal!0=image/jpeg&type!equal!1=image/png
 
-This query will return any JPEG or PNG assets. Notice that since I'm querying the same piece of metadata twice with the same operator, I need to add a garbage identifier to make the query arguments unique, as required by RFC3986.
+This query will return any JPEG or PNG assets.
 
 * `GET` - Returns a JSON object containing the input query (`query`), and the matching assets (`matches`) as an object. This object is of identical structure to that returned by the `by-user` endpoint.
 

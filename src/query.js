@@ -47,7 +47,6 @@ function listAssetsByMeta(req,res,next)
 		// parse the operator, if one is provided
 		var parts = i.split('!');
 		var key = parts[0], operator = parts[1];
-		console.log(key, operator, val);
 		switch(operator)
 		{
 			case undefined:
@@ -89,7 +88,6 @@ function listAssetsByMeta(req,res,next)
 		whereClause = (whereClause ? whereClause + (req.params.conj==='any'?' OR ':' AND ') : 'WHERE ') + wherePhrase;
 	}
 
-	console.log(whereClause);
 	if(!whereClause){
 		return res.status(400).send('Must supply at least one valid query argument');
 	}
