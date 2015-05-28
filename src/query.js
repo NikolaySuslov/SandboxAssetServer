@@ -44,22 +44,54 @@ function listAssetsByMeta(req,res,next)
 		var val = req.query[key];
 		var wherePhrase;
 
+		// parse the operator, if one is provided
+		var parts = key.split('!'), operator;
+		key = parts[0], operator = parts[1];
+		console.log(key, operator, val);
+		switch(operator)
+		{
+			case undefined:
+			case 'equal':        operator = ' = ';    break;
+			case 'notEqual':     operator = ' != ';   break;
+			case 'greaterThan':  operator = ' > ';    break;
+			case 'lessThan':     operator = ' < ';    break;
+			case 'greaterEqual': operator = ' >= ';   break;
+			case 'lessEqual':    operator = ' <= ';   break;
+			case 'like':         operator = ' LIKE '; break;
+
+			default: continue;
+		}
+
+		// parse value, if it requires parsing
+		var isAsset = /^asset:([A-Fa-f0-9]{8})$/.exec(val);
+		if(isAsset){
+			val = parseInt(isAsset[1], 16);
+		}
+		else if( !isNaN( Date.parse(val) ) ){
+			val = new Date(val);
+		}
+
+
+		// create an SQL phrase describing the current key/value filter
 		if( ['type','permissions','user_name','group_name','created','last_modified'].indexOf(key) > -1 )
 		{
-			wherePhrase = sqlEscapeKey('Assets.'+key) + ' = ' + sqlEscapeVal(val);
+			wherePhrase = sqlEscapeKey('Assets.'+key) + operator + sqlEscapeVal(val);
 		}
 		else {
-			var isAsset = /^asset:([A-Fa-f0-9]{8})$/.exec(val);
-			var assetId = isAsset ? parseInt(isAsset[1], 16) : null;
-			if(isAsset){
-				wherePhrase = '(Metadata.key = '+ sqlEscapeVal(key) +' AND Metadata.asset = '+sqlEscapeVal(assetId)+')';
+			if(isAsset && (operator === ' = ' || operator === ' != ')){
+				wherePhrase = '(Metadata.key = '+ sqlEscapeVal(key) +' AND Metadata.asset' + operator + sqlEscapeVal(val)+')';
 			}
 			else {
-				wherePhrase = '(Metadata.key = '+ sqlEscapeVal(key) +' AND Metadata.value = '+sqlEscapeVal(val)+')';
+				wherePhrase = '(Metadata.key = '+ sqlEscapeVal(key) +' AND Metadata.value' + operator + sqlEscapeVal(val)+')';
 			}
 		}
 
-		whereClause = (whereClause ? whereClause + ' AND ' : 'WHERE ') + wherePhrase;
+		whereClause = (whereClause ? whereClause + (req.params.conj==='any'?' OR ':' AND ') : 'WHERE ') + wherePhrase;
+	}
+
+	console.log(whereClause);
+	if(!whereClause){
+		return res.status(400).send('Must supply at least one valid query');
 	}
 
 	db.queryAllResults(

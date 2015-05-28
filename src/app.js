@@ -58,7 +58,7 @@ function router(config)
 	router.delete('/assets/:id([0-9A-Fa-f]{8})', assets.deleteAsset);
 
 	router.get('/assets/by-user/:user([A-Za-z_][A-Za-z0-9_-]*)$', query.listAssetsByUser);
-	router.get('/assets/by-meta/', query.listAssetsByMeta);
+	router.get('/assets/by-meta/:conj((?:any|all))-of', query.listAssetsByMeta);
 
 	router.post('/assets/:id([0-9A-Fa-f]{8})/meta/permissions', perms.setPerms);
 	router.delete('/assets/:id([0-9A-Fa-f]{8})/meta/permissions',
