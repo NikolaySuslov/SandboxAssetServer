@@ -57,6 +57,7 @@ function getAllMetadata(req,res,next)
 function getSomeMetadata(req,res,next)
 {
 	var id = parseInt(req.params.id, 16);
+	var keys = req.params.fields.split('+');
 	perms.hasPerm(id, req.session.user, perms.READ, function(err,result)
 	{
 		if(err){
@@ -72,7 +73,7 @@ function getSomeMetadata(req,res,next)
 			else
 				res.status(401).send('Asset does not allow anonymous access');
 		}
-		else if( ['type','permissions','user_name','group_name','created','last_modified'].indexOf(req.params.field) > -1 )
+		/*else if( ['type','permissions','user_name','group_name','created','last_modified'].indexOf(req.params.field) > -1 )
 		{
 			if( req.params.field === 'permissions' ){
 				if( req.query.permFormat === 'json' ){
@@ -87,33 +88,51 @@ function getSomeMetadata(req,res,next)
 				res.set('Content-Type', 'text/plain');
 				res.status( result[req.params.field] ? 200 : 404 ).send( result[req.params.field] );
 			}
-		}
+		}*/
 		else
 		{
-			db.queryFirstResult('SELECT value, asset FROM Metadata WHERE id = $id AND key = $key', {$id: id, $key: req.params.field},
-				function(err,result)
+			db.queryAllResults('SELECT key, value, asset FROM Metadata WHERE id = $id AND key IN ('+sql_escape(keys)+')', {$id: id, $key: req.params.field},
+				function(err,rows)
 				{
 					if(err){
 						console.error('Failed to get metadata:', err);
 						res.status(500).send('DB error');
 					}
-					else if(!result){
-						res.status(404).send('No metadata for this asset by that name');
+					else if(keys.length === 1 && rows.length === 1 && rows[0].asset && !req.query.raw)
+					{
+						var origPath = liburl.parse( req.originalUrl ).pathname;
+						var newPath = origPath.replace( new RegExp('[0-9A-Fa-f]{8}\/meta\/'+keys[0]+'$'), rows[0].asset.toString(16) );
+						res.redirect(newPath);
 					}
-					else if( result.asset ){
-						if( !req.query.raw ){
-							var origPath = liburl.parse( req.originalUrl ).pathname;
-							var newPath = origPath.replace( new RegExp('[0-9A-Fa-f]{8}\/meta\/'+req.params.field+'$'), result.asset.toString(16) );
-							res.redirect(newPath);
+					else
+					{
+						var out = {};
+
+						for(var i=0; i<rows.length; i++){
+							out[ rows[i].key ] = rows[i].value || 'asset:'+rows[i].asset.toString(16);
 						}
-						else {
-							res.set('Content-Type', 'text/plain');
-							res.send( 'asset:'+result.asset.toString(16) );
+
+						for(var i=0; i<keys.length; i++){
+							if( ['type','permissions','user_name','group_name','created','last_modified'].indexOf(keys[i]) > -1 )
+							{
+								if( keys[i] === 'permissions' ){
+									if( req.query.permFormat === 'json' ){
+										out[keys[i]] = perms.unpackPerms(result.permissions);
+									}
+									else {
+										out[keys[i]] = result.permissions.toString(8);
+									}
+								}
+								else {
+									out[keys[i]] = result[keys[i]];
+								}
+							}
 						}
-					}
-					else {
-						res.set('Content-Type', 'text/plain');
-						res.send( result.value );
+
+						if( Object.keys(out).length === 0 )
+							res.status(404).send('No metadata for this asset by that name');
+						else
+							res.json(out);
 					}
 				}
 			);
