@@ -73,22 +73,6 @@ function getSomeMetadata(req,res,next)
 			else
 				res.status(401).send('Asset does not allow anonymous access');
 		}
-		/*else if( ['type','permissions','user_name','group_name','created','last_modified'].indexOf(req.params.field) > -1 )
-		{
-			if( req.params.field === 'permissions' ){
-				if( req.query.permFormat === 'json' ){
-					res.json( perms.unpackPerms(result.permissions) );
-				}
-				else {
-					res.set('Content-Type', 'text/plain');
-					res.send( result.permissions.toString(8) );
-				}
-			}
-			else {
-				res.set('Content-Type', 'text/plain');
-				res.status( result[req.params.field] ? 200 : 404 ).send( result[req.params.field] );
-			}
-		}*/
 		else
 		{
 			db.queryAllResults('SELECT key, value, asset FROM Metadata WHERE id = $id AND key IN ('+sql_escape(keys)+')', {$id: id, $key: req.params.field},

@@ -4,9 +4,11 @@
 Asset Management
 ----------------
 
-### /assets/new
+### /assets/new \[?*meta*=*data*\]
 
-Upload a new asset of the type specified in the `Content-Type` request header. Requires a login.
+Upload a new asset of the type specified in the `Content-Type` request header. Requires an authenticated user.
+
+If desired, you can set metadata on the new asset by supplying some in the query argument of the URL. E.g. `POST /assets/new?group_name=devteam&permissions=764&name=some_asset`.
 
 * `POST` - Upload a file to the server as a new asset. Returns the asset ID of the upload.
 
@@ -56,13 +58,13 @@ Returns:
 * `404` - No asset with this ID.
 
 
-### /assets/*asset_id*/meta/*key* \[?raw=true\]
+### /assets/*asset_id*/meta/*key* \[+*key*\] \[?raw=true\] \[?permFormat=json\]
 
 Manage a particular piece of metadata about the asset identified by *key*. This endpoint exposes several pieces of protected read-only metadata: `type`, `user_name`, `created`, and `last_modified`. Unlike the en masse metadata endpoint, this one can set the protected fields `permissions` and `group_name`. See below for more information.
 
-If the value of the given piece of metadata is of the form `asset:<8 hex digits>`, it is considered to be an asset reference. `GET` requests to metadata referencing an asset will redirect to that asset unless the `raw` query argument is truthy.
+If the value of the given piece of metadata is of the form `asset:<8 hex digits>`, it is considered to be an asset reference. `GET` requests to metadata referencing an asset will redirect to that asset unless the `raw` query argument is truthy. For example, if you set a piece of metadata to the string `asset:deadbeef`, and `GET` it, the request will be 302 redirected to `/assets/deadbeef` without the `raw` argument, and will just return the string `asset:deadbeef` with it.
 
-For example, if you set a piece of metadata to the string `asset:deadbeef`, and `GET` it, the request will be 302 redirected to `/assets/deadbeef` without the `raw` argument, and will just return `asset:deadbeef` with it.
+You can retrieve multiple pieces of metadata at once by making a `GET` request and specifying multiple metadata keys separated by a `+` (e.g. `GET /assets/deadbeef/meta/name+description`).
 
 * `GET` - Returns a particular piece of metadata about the asset.
 * `POST` - Update a particular piece of metadata. Returns status code only.
@@ -81,7 +83,7 @@ Returns:
 
 Manage an asset's permissions. This endpoint accepts/returns a UNIX-style octal integer permission representation, or alternatively a JSON representation of the asset's permission set if the query argument `permFormat` is set to `json`. See the permissions module [here](../src/perms.js#L5) and [here](../src/perms.js#L56) for details on how the two representations are converted.
 
-* `GET` - Returns the asset's permissions.
+* `GET` - Returns the asset's permissions in the specified format.
 * `POST` - Sets the permissions on the asset to the given permission set. If a sparse JSON object (i.e. does not have every permission) is POSTed, it will be merged with the current permission set. Note that only the asset uploader and members of a write-permitted group can set permissions.
 
 
