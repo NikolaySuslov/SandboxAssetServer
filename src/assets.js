@@ -4,7 +4,8 @@ var mime = require('mime'),
 	storage = require('./storage.js'),
 	db = require('./db.js'),
 	util = require('./util.js'),
-	perms = require('./perms.js');
+	perms = require('./perms.js'),
+	metadata = require('./metadata.js');
 
 
 function getAsset(req,res,next)
@@ -140,8 +141,13 @@ function newAsset(req,res,next)
 		var id = Math.floor(Math.random() * 0x100000000);
 
 		db.queryNoResults(
-			'INSERT INTO Assets (id, type, permissions, user_name) VALUES ($id, $type, $perms, $user)',
-			{$id: id, $type: req.headers['content-type'], $perms: 0744, $user: req.session.username},
+			'INSERT INTO Assets (id, type, permissions, user_name, group_name) VALUES ($id, $type, $perms, $user, $group)', {
+				$id: id, 
+				$type: req.headers['content-type'], 
+				$perms: parseInt(req.query.permissions,8) || 0744, 
+				$user: req.session.username,
+				$group: req.query.group_name || null
+			},
 			function(err,result)
 			{
 				if(err){
@@ -164,6 +170,7 @@ function newAsset(req,res,next)
 							res.status(500).send('FS error');
 						}
 						else {
+							metadata.setMetadata(id, req.query);
 							res.status(201).send( util.formatId(id, true) );
 						}
 					});

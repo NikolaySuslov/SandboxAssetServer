@@ -142,6 +142,25 @@ function getSomeMetadata(req,res,next)
 	
 }
 
+function setMetadata(id, data, cb)
+{
+	delete data.type;
+	delete data.permissions;
+	delete data.user_name;
+	delete data.group_name;
+	delete data.created;
+	delete data.last_modified;
+
+	var inserts = [];
+	for(var i in data){
+		var isAsset = /^asset:([A-Fa-f0-9]{8})$/.exec( data[i] );
+		var assetId = isAsset ? parseInt(isAsset[1], 16) : null;
+		inserts.push( [id, i, isAsset ? null : data[i], assetId ] );
+	}
+
+	db.queryNoResults('INSERT OR REPLACE INTO Metadata (id, key, value, asset) VALUES '+sql_escape(inserts), [], cb || function(){});
+}
+
 function setAllMetadata(req,res,next)
 {
 	var id = parseInt(req.params.id, 16);
@@ -170,32 +189,15 @@ function setAllMetadata(req,res,next)
 		}
 		else
 		{
-			delete req.body.type;
-			delete req.body.permissions;
-			delete req.body.user_name;
-			delete req.body.group_name;
-			delete req.body.created;
-			delete req.body.last_modified;
-
-			var inserts = [];
-			for(var i in req.body){
-				var isAsset = /^asset:([A-Fa-f0-9]{8})$/.exec( req.body[i] );
-				var assetId = isAsset ? parseInt(isAsset[1], 16) : null;
-				inserts.push( [id, i, isAsset ? null : req.body[i], assetId ] );
-			}
-
-			db.queryNoResults('INSERT OR REPLACE INTO Metadata (id, key, value, asset) VALUES '+sql_escape(inserts), null,
-				function(err,result)
-				{
-					if(err){
-						console.error('Failed to set metadata:', err);
-						res.status(500).send('DB error');
-					}
-					else {
-						res.sendStatus(200);
-					}
+			setMetadata(id, req.body, function(err,result){
+				if(err){
+					console.error('Failed to set metadata:', err);
+					res.status(500).send('DB error');
 				}
-			);
+				else {
+					res.sendStatus(200);
+				}
+			});
 		}
 	});
 
@@ -204,7 +206,6 @@ function setAllMetadata(req,res,next)
 function setSomeMetadata(req,res,next)
 {
 	var id = parseInt(req.params.id, 16);
-	var isAsset = /^asset:([A-Fa-f0-9]{8})$/.exec(req.body.toString());
 
 	if( ['permissions','group_name','type','user_name','created','last_modified'].indexOf(req.params.field) > -1 ){
 		res.status(403).send('Cannot directly modify protected field');
@@ -333,6 +334,8 @@ function deleteSomeMetadata(req,res,next)
 	}
 
 }
+
+exports.setMetadata = setMetadata;
 
 exports.getAllMetadata = getAllMetadata;
 exports.getSomeMetadata = getSomeMetadata;
