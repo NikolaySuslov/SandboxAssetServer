@@ -1,5 +1,4 @@
 var liburl = require('url'),
-	sql_escape = require('mysql').escape,
 	util = require('./util.js'),
 	db = require('./db.js'),
 	perms = require('./perms.js');
@@ -75,7 +74,7 @@ function getSomeMetadata(req,res,next)
 		}
 		else
 		{
-			db.queryAllResults('SELECT key, value, asset FROM Metadata WHERE id = $id AND key IN ('+sql_escape(keys)+')', {$id: id, $key: req.params.field},
+			db.queryAllResults('SELECT key, value, asset FROM Metadata WHERE id = $id AND key IN ('+util.escapeValue(keys)+')', {$id: id, $key: req.params.field},
 				function(err,rows)
 				{
 					if(err){
@@ -142,7 +141,7 @@ function setMetadata(id, data, cb)
 		inserts.push( [id, i, isAsset ? null : data[i], assetId ] );
 	}
 
-	db.queryNoResults('INSERT OR REPLACE INTO Metadata (id, key, value, asset) VALUES '+sql_escape(inserts), [], cb || function(){});
+	db.queryNoResults('INSERT OR REPLACE INTO Metadata (id, key, value, asset) VALUES '+util.escapeValue(inserts), [], cb || function(){});
 }
 
 function setAllMetadata(req,res,next)

@@ -1,5 +1,6 @@
 var decode = require('client-sessions').util.decode,
-	libpath = require('path');
+	libpath = require('path'),
+	mysql = require('mysql');
 
 
 function headerSessions(req,res,next)
@@ -49,5 +50,16 @@ function formatId(int,idOnly){
 		return libpath.join(id.slice(0,2), id.slice(2));
 }
 
+function escapeValue(str){
+	return mysql.escape(str).replace("\\'", "''");
+}
+
+function escapeKey(str){
+	return mysql.escapeId(str);
+}
+
 exports.headerSessions = headerSessions;
 exports.formatId = formatId;
+exports.escapeValue = escapeValue;
+exports.escapeKey = escapeKey;
+

@@ -1,5 +1,4 @@
-var mysql = require('mysql'),
-
+var util = require('./util.js'),
 	db = require('./db.js');
 
 function listAssetsByUser(req,res,next)
@@ -35,7 +34,7 @@ function listAssetsByUser(req,res,next)
 
 function listAssetsByMeta(req,res,next)
 {
-	var sqlEscapeVal = mysql.escape, sqlEscapeKey = mysql.escapeId;
+	var sqlEscapeVal = util.escapeValue, sqlEscapeKey = util.escapeKey;
 
 	var whereClause = '';
 
