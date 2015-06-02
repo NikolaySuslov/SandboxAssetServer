@@ -120,14 +120,23 @@ function deleteAsset(req,res,next)
 		}
 		else
 		{
-			var path = util.formatId(id);
-			storage.deleteFile(req.assetConfig, path, function(err){
+			db.queryNoResults('DELETE FROM Assets WHERE id = ?', [id], function(err,result)
+			{
 				if(err){
 					console.error('Failed to delete asset:', err);
-					res.status(500).send('FS error');
+					res.status(500).send('DB error');
 				}
 				else {
-					res.sendStatus(204);
+					var path = util.formatId(id);
+					storage.deleteFile(req.assetConfig, path, function(err){
+						if(err){
+							console.error('Failed to delete asset:', err);
+							res.status(500).send('FS error');
+						}
+						else {
+							res.sendStatus(204);
+						}
+					});
 				}
 			});
 		}
