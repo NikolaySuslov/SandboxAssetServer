@@ -5,7 +5,7 @@ var mysql = require('mysql'),
 function listAssetsByUser(req,res,next)
 {
 	db.queryAllResults(
-		'SELECT PRINTF("%x",id) AS id, type, PRINTF("%o",permissions) AS permissions, user_name, group_name, '+
+		'SELECT PRINTF("%08x",id) AS id, type, PRINTF("%o",permissions) AS permissions, user_name, group_name, '+
 		'strftime("%Y-%m-%dT%H:%M:%SZ",created) AS created, strftime("%Y-%m-%dT%H:%M:%SZ",last_modified) AS last_modified '+
 		'FROM Assets WHERE user_name = ?',
 		[req.params.user],
@@ -94,7 +94,7 @@ function listAssetsByMeta(req,res,next)
 
 	db.queryAllResults(
 		'SELECT DISTINCT '+
-			'PRINTF("%x",Assets.id) AS id, Assets.type AS type, PRINTF("%o",Assets.permissions) AS permissions, Assets.user_name AS user_name, Assets.group_name AS group_name, '+
+			'PRINTF("%08x",Assets.id) AS id, Assets.type AS type, PRINTF("%o",Assets.permissions) AS permissions, Assets.user_name AS user_name, Assets.group_name AS group_name, '+
 			'strftime("%Y-%m-%dT%H:%M:%SZ",Assets.created) AS created, strftime("%Y-%m-%dT%H:%M:%SZ",Assets.last_modified) AS last_modified '+
 		'FROM Assets LEFT JOIN Metadata ON Metadata.id = Assets.id '+ whereClause,
 		[],
