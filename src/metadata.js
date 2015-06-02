@@ -215,15 +215,9 @@ function setSomeMetadata(req,res,next)
 			}
 			else
 			{
-				db.queryNoResults('INSERT OR REPLACE INTO Metadata (id, key, value, asset) VALUES ($id, $key, $value, $asset)',
-					{
-						$id: id,
-						$key: req.params.field,
-						$value: isAsset ? null : req.body.toString(),
-						$asset: isAsset ? parseInt(isAsset[1], 16) : null
-					},
-					function(err,result)
-					{
+				setMetadata(id,
+					{req.params.field: req.body.toString()},
+					function(err,result){
 						if(err){
 							console.error('Failed to set metadata:', err);
 							res.status(500).send('DB error');
