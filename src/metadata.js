@@ -215,8 +215,10 @@ function setSomeMetadata(req,res,next)
 			}
 			else
 			{
-				setMetadata(id,
-					{req.params.field: req.body.toString()},
+				var fields = {};
+				fields[req.params.field] = req.body.toString();
+
+				setMetadata(id, fields,
 					function(err,result){
 						if(err){
 							console.error('Failed to set metadata:', err);
