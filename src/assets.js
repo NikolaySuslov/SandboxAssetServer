@@ -170,7 +170,9 @@ function newAsset(req,res,next)
 							res.status(500).send('FS error');
 						}
 						else {
-							metadata.setMetadata(id, req.query);
+							metadata.setMetadata(id, req.query, function(err){
+								if(err) console.error('Failed to set metadata:', err);
+							});
 							res.status(201).send( util.formatId(id, true) );
 						}
 					});
