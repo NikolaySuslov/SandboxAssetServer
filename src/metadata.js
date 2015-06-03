@@ -141,7 +141,15 @@ function setMetadata(id, data, cb)
 		inserts.push( [id, i, isAsset ? null : data[i], assetId ] );
 	}
 
-	db.queryNoResults('INSERT OR REPLACE INTO Metadata (id, key, value, asset) VALUES '+util.escapeValue(inserts), [], cb || function(){});
+	db.queryNoResults('INSERT OR REPLACE INTO Metadata (id, key, value, asset) VALUES '+util.escapeValue(inserts), [], function(err)
+	{
+		if(err){
+			cb(err);
+		}
+		else {
+			db.queryNoResults('DELETE FROM Metadata WHERE value = NULL AND asset = NULL', [], cb);
+		}
+	});
 }
 
 function setAllMetadata(req,res,next)
