@@ -33,7 +33,6 @@ function getAllMetadata(req,res,next)
 					else
 					{
 						var meta = {
-							'id': result.id,
 							'type': result.type,
 							'permissions': req.query.permFormat === 'json' ? perms.unpackPerms(result.permissions) : result.permissions.toString(8),
 							'user_name': result.user_name,
