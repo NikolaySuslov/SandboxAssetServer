@@ -56,6 +56,7 @@ function listAssetsByMeta(req,res,next)
 			case 'greaterEqual': operator = ' >= ';   break;
 			case 'lessEqual':    operator = ' <= ';   break;
 			case 'like':         operator = ' LIKE '; break;
+			case 'hasPerm':      /* special case */   break;
 
 			default: delete req.query[i]; continue;
 		}
@@ -73,7 +74,12 @@ function listAssetsByMeta(req,res,next)
 		// create an SQL phrase describing the current key/value filter
 		if( ['type','permissions','user_name','group_name','created','last_modified'].indexOf(key) > -1 )
 		{
-			wherePhrase = sqlEscapeKey('Assets.'+key) + operator + sqlEscapeVal(val);
+			if( key === 'permissions' && operator === 'hasPerm' ){
+				wherePhrase = sqlEscapeKey('Assets.permissions') +' & '+ parseInt(val,8) +' != 0';
+			}
+			else {
+				wherePhrase = sqlEscapeKey('Assets.'+key) + operator + sqlEscapeVal(val);
+			}
 		}
 		else {
 			if(isAsset && (operator === ' = ' || operator === ' != ')){
