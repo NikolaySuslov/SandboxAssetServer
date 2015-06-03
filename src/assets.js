@@ -178,7 +178,13 @@ function newAsset(req,res,next)
 							db.queryNoResults('DELETE FROM Assets WHERE id = ?', id);
 							res.status(500).send('FS error');
 						}
-						else {
+						else
+						{
+							for(var i in req.query){
+								if( req.query[i] === ':self' )
+									req.query[i] = 'asset:'+util.formatId(id, true);
+							}
+
 							metadata.setMetadata(id, req.query, function(err){
 								if(err) console.error('Failed to set metadata:', err);
 							});
