@@ -135,10 +135,15 @@ function setMetadata(id, data, cb)
 	delete data.last_modified;
 
 	var inserts = [];
+	var deletes = [];
 	for(var i in data){
 		var isAsset = /^asset:([A-Fa-f0-9]{8})$/.exec( data[i] );
 		var assetId = isAsset ? parseInt(isAsset[1], 16) : null;
-		inserts.push( [id, i, isAsset ? null : data[i], assetId ] );
+
+		if( data[i] === null )
+			deletes.push(i);
+		else
+			inserts.push( [id, i, isAsset ? null : data[i], assetId ] );
 	}
 
 	db.queryNoResults('INSERT OR REPLACE INTO Metadata (id, key, value, asset) VALUES '+util.escapeValue(inserts), [], function(err)
@@ -147,7 +152,8 @@ function setMetadata(id, data, cb)
 			cb(err);
 		}
 		else {
-			db.queryNoResults('DELETE FROM Metadata WHERE value = NULL AND asset = NULL', [], cb);
+			//db.queryNoResults('DELETE FROM Metadata WHERE value = NULL AND asset = NULL', [], cb);
+			db.queryNoResults('DELETE FROM Metadata WHERE id = ? AND key IN ('+util.escapeValue(deletes)+')', [id], cb);
 		}
 	});
 }
