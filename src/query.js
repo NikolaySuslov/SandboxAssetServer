@@ -56,7 +56,7 @@ function listAssetsByMeta(req,res,next)
 			case 'greaterEqual': operator = ' >= ';   break;
 			case 'lessEqual':    operator = ' <= ';   break;
 			case 'like':         operator = ' LIKE '; break;
-			case 'hasPerm':      /* special case */   break;
+			case 'hasPerms':      /* special case */   break;
 
 			default: delete req.query[i]; continue;
 		}
@@ -66,6 +66,13 @@ function listAssetsByMeta(req,res,next)
 		if(isAsset){
 			val = parseInt(isAsset[1], 16);
 		}
+		else if( key === 'permissions' && operator === 'hasPerms' ){
+			val = parseInt(val, 8);
+			if(!/^[0-7]+$/.test(req.query[i]) || isNaN(val)){
+				delete req.query[i];
+				continue;
+			}
+		}
 		else if( !isNaN( Date.parse(val) ) ){
 			val = new Date(val);
 		}
@@ -74,8 +81,8 @@ function listAssetsByMeta(req,res,next)
 		// create an SQL phrase describing the current key/value filter
 		if( ['type','permissions','user_name','group_name','created','last_modified'].indexOf(key) > -1 )
 		{
-			if( key === 'permissions' && operator === 'hasPerm' ){
-				wherePhrase = sqlEscapeKey('Assets.permissions') +' & '+ parseInt(val,8) +' != 0';
+			if( key === 'permissions' && operator === 'hasPerms' ){
+				wherePhrase = sqlEscapeKey('Assets.permissions') +' & '+ val +' != 0';
 			}
 			else {
 				wherePhrase = sqlEscapeKey('Assets.'+key) + operator + sqlEscapeVal(val);
