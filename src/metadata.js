@@ -7,7 +7,7 @@ var liburl = require('url'),
 function getAllMetadata(req,res,next)
 {
 	var id = parseInt(req.params.id, 16);
-	perms.hasPerm(id, req.session.user, perms.READ, function(err,result)
+	perms.hasPerm(id, req.session.username, perms.READ, function(err,result)
 	{
 		if(err){
 			console.error('Failed to check permissions:', err);
@@ -57,7 +57,7 @@ function getSomeMetadata(req,res,next)
 {
 	var id = parseInt(req.params.id, 16);
 	var keys = req.params.fields.split('+');
-	perms.hasPerm(id, req.session.user, perms.READ, function(err,result)
+	perms.hasPerm(id, req.session.username, perms.READ, function(err,result)
 	{
 		if(err){
 			console.error('Failed to check permissions:', err);
