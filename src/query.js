@@ -66,9 +66,9 @@ function listAssetsByMeta(req,res,next)
 		if(isAsset){
 			val = parseInt(isAsset[1], 16);
 		}
-		else if( key === 'permissions' && operator === 'hasPerms' ){
+		else if( operator === 'hasPerms' ){
 			val = parseInt(val, 8);
-			if(!/^[0-7]+$/.test(req.query[i]) || isNaN(val)){
+			if( key !== 'permissions' || !/^[0-7]+$/.test(req.query[i]) || isNaN(val)){
 				delete req.query[i];
 				continue;
 			}

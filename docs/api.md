@@ -116,9 +116,11 @@ Retrieve a list of assets whose protected and user-defined metadata satisfies an
 
 	criterion ::= meta_name ["!" comparison_operator ["!" ignored] ] "=" meta_value ;
 	comparison_operator ::= "equal" | "notEqual" | "greaterThan" | "greaterEqual"
-		| "lessThan" | "lessEqual" | "like" ;
+		| "lessThan" | "lessEqual" | "like" | "hasPerms" ;
 
 If a comparison operator is not specified, the default operator is `equal`, and criteria with invalid operators are discarded. Additional `ignored` text can be added if you need to make the query argument name unique, as required by the query string standard. Asset references can be specified using the usual `asset:id` format. Date/time formats are flexible, and anything parsable by [Date.parse](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/parse) is acceptable, but ISO-8601 dates are recommended.
+
+When querying the `permissions` metadata field, the special operator `hasPerms` is available, accepting an octal permission set. An asset will pass the `permissions!hasPerms` criterion if its permissions are at least as permissive as those given, i.e. `asset.permissions & query != 0`. For all other metadata, the `hasPerms` operator is invalid.
 
 So for example, if you wanted all JPEG assets from a particular user, you could query it like so (except URL-encoded):
 
