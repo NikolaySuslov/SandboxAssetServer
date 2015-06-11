@@ -41,7 +41,7 @@ Metadata Management
 
 ### /assets/*asset_id*/meta \[?permFormat=json\]
 
-Manage arbitrary metadata about an asset. This endpoint exposes several pieces of protected read-only metadata: `type`, `permissions`, `user_name`, `group_name`, `created`, and `last_modified`.
+Manage arbitrary metadata about an asset. This endpoint exposes several pieces of protected read-only metadata: `type`, `permissions`, `user_name`, `group_name`, `created`, `last_modified`, and `size`.
 
 If the value of a field is of the form `asset:<8 hex digits>`, it is considered to be an asset reference. See below for details.
 
@@ -60,7 +60,7 @@ Returns:
 
 ### /assets/*asset_id*/meta/*key* \[+*key*\] \[?raw=true\] \[?permFormat=json\]
 
-Manage a particular piece of metadata about the asset identified by *key*. This endpoint exposes several pieces of protected read-only metadata: `type`, `user_name`, `created`, and `last_modified`. Unlike the en masse metadata endpoint, this one can set the protected fields `permissions` and `group_name`. See below for more information.
+Manage a particular piece of metadata about the asset identified by *key*. This endpoint exposes several pieces of protected read-only metadata: `type`, `user_name`, `created`, `last_modified`, and `size`. Unlike the en masse metadata endpoint, this one can set the protected fields `permissions` and `group_name`. See below for more information.
 
 If the value of the given piece of metadata is of the form `asset:<8 hex digits>`, it is considered to be an asset reference. `GET` requests to metadata referencing an asset will redirect to that asset unless the `raw` query argument is truthy. For example, if you set a piece of metadata to the string `asset:deadbeef`, and `GET` it, the request will be 302 redirected to `/assets/deadbeef` without the `raw` argument, and will just return the string `asset:deadbeef` with it.
 
@@ -103,7 +103,7 @@ Search
 
 Retrieve a list of assets owned by a particular user. This is functionally identical to `/assets/by-meta/all-of?user_name=<user_name>`.
 
-* `GET` - Returns a JSON object containing the user name (`user_name`) and an object (`assets`) mapping asset IDs to other objects containing a minimum set of asset metadata. An asset is described here by its metadata `id`, `type`, `permissions`, `user_name`, `group_name`, `created`, and `last_update`.
+* `GET` - Returns a JSON object containing the user name (`user_name`) and an object (`assets`) mapping asset IDs to other objects containing a minimum set of asset metadata. An asset is described here by its metadata `id`, `type`, `permissions`, `user_name`, `group_name`, `created`, `last_update`, and `size`.
 
 Returns:
 
@@ -130,7 +130,7 @@ You can also search for assets that match at least one criterion instead of all 
 
 	GET /assets/by-meta/any-of?type!equal!0=image/jpeg&type!equal!1=image/png
 
-This query will return any JPEG or PNG assets.
+This query will return any JPEG or PNG assets (though it would be more practical in this case to say `?type!like=image/%`).
 
 * `GET` - Returns a JSON object containing the input query (`query`), and the matching assets (`matches`) as an object. This object is of identical structure to that returned by the `by-user` endpoint.
 
