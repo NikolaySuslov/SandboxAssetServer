@@ -1,6 +1,6 @@
 {
   "name": "SandboxAssetServer",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "description": "A simple set of CRUD services to manage Sandbox assets",
   "main": "src/app.js",
   "directories": {
