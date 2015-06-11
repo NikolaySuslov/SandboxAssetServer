@@ -4,7 +4,7 @@ var util = require('./util.js'),
 function listAssetsByUser(req,res,next)
 {
 	db.queryAllResults(
-		'SELECT PRINTF("%08x",id) AS id, type, PRINTF("%o",permissions) AS permissions, user_name, group_name, '+
+		'SELECT PRINTF("%08x",id) AS id, type, PRINTF("%o",permissions) AS permissions, user_name, group_name, size, '+
 		'strftime("%Y-%m-%dT%H:%M:%SZ",created) AS created, strftime("%Y-%m-%dT%H:%M:%SZ",last_modified) AS last_modified '+
 		'FROM Assets WHERE user_name = ?',
 		[req.params.user],
@@ -56,30 +56,34 @@ function listAssetsByMeta(req,res,next)
 			case 'greaterEqual': operator = ' >= ';   break;
 			case 'lessEqual':    operator = ' <= ';   break;
 			case 'like':         operator = ' LIKE '; break;
-			case 'hasPerms':      /* special case */   break;
+			case 'hasPerms':     /* special case */   break;
 
 			default: delete req.query[i]; continue;
 		}
 
 		// parse value, if it requires parsing
-		var isAsset = /^asset:([A-Fa-f0-9]{8})$/.exec(val);
-		if(isAsset){
-			val = parseInt(isAsset[1], 16);
+		if( /^asset:[A-Fa-f0-9]{8}$/.test(val) ){
+			var isAsset = true;
+			val = parseInt(val.slice(6), 16);
 		}
 		else if( operator === 'hasPerms' ){
-			val = parseInt(val, 8);
-			if( key !== 'permissions' || !/^[0-7]+$/.test(req.query[i]) || isNaN(val)){
+			if( key === 'permissions' || /^[0-7]+$/.test(req.query[i]) ){
+				val = parseInt(val, 8);
+			}
+			else {
 				delete req.query[i];
 				continue;
 			}
+		}
+		else if( /^[0-9]+$/.test(val) ){
+			val = parseInt(val);
 		}
 		else if( !isNaN( Date.parse(val) ) ){
 			val = new Date(val);
 		}
 
-
 		// create an SQL phrase describing the current key/value filter
-		if( ['type','permissions','user_name','group_name','created','last_modified'].indexOf(key) > -1 )
+		if( ['type','permissions','user_name','group_name','created','last_modified','size'].indexOf(key) > -1 )
 		{
 			if( key === 'permissions' && operator === 'hasPerms' ){
 				wherePhrase = sqlEscapeKey('Assets.permissions') +' & '+ val +' != 0';
@@ -106,7 +110,8 @@ function listAssetsByMeta(req,res,next)
 
 	db.queryAllResults(
 		'SELECT DISTINCT '+
-			'PRINTF("%08x",Assets.id) AS id, Assets.type AS type, PRINTF("%o",Assets.permissions) AS permissions, Assets.user_name AS user_name, Assets.group_name AS group_name, '+
+			'PRINTF("%08x",Assets.id) AS id, PRINTF("%o",Assets.permissions) AS permissions, '+
+			'Assets.type AS type, Assets.user_name AS user_name, Assets.group_name AS group_name, Assets.size AS size, '+
 			'strftime("%Y-%m-%dT%H:%M:%SZ",Assets.created) AS created, strftime("%Y-%m-%dT%H:%M:%SZ",Assets.last_modified) AS last_modified '+
 		'FROM Assets LEFT JOIN Metadata ON Metadata.id = Assets.id '+ whereClause,
 		[],

@@ -26,6 +26,7 @@ function initializeDatabase(path)
 		'	group_name VARCHAR(50),'+
 		'	created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,'+
 		'	last_modified TIMESTAMP DEFAULT CURRENT_TIMESTAMP,'+
+		'	size INT UNSIGNED DEFAULT 0,'+
 
 		'	PRIMARY KEY(id)'+
 		')', handleError('Failed to create assets table'))

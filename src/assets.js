@@ -71,8 +71,8 @@ function overwriteAsset(req,res,next)
 					res.status(401).send('Asset does not allow anonymous writes');
 			}
 			else {
-				db.queryNoResults('UPDATE Assets SET type = $type, last_modified = CURRENT_TIMESTAMP WHERE id = $id',
-					{$type: req.headers['content-type'], $id: id},
+				db.queryNoResults('UPDATE Assets SET type = $type, size = $size, last_modified = CURRENT_TIMESTAMP WHERE id = $id',
+					{$type: req.headers['content-type'], $size: req.body.length, $id: id},
 					function(err,results)
 					{
 						if(err){
@@ -150,12 +150,13 @@ function newAsset(req,res,next)
 		var id = Math.floor(Math.random() * 0x100000000);
 
 		db.queryNoResults(
-			'INSERT INTO Assets (id, type, permissions, user_name, group_name) VALUES ($id, $type, $perms, $user, $group)', {
+			'INSERT INTO Assets (id, type, permissions, user_name, group_name, size) VALUES ($id, $type, $perms, $user, $group, $size)', {
 				$id: id, 
 				$type: req.headers['content-type'], 
 				$perms: parseInt(req.query.permissions,8) || 0744, 
 				$user: req.session.username,
-				$group: req.query.group_name || null
+				$group: req.query.group_name || null,
+				$size: req.body.length
 			},
 			function(err,result)
 			{

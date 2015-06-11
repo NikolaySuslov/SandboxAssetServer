@@ -38,7 +38,8 @@ function getAllMetadata(req,res,next)
 							'user_name': result.user_name,
 							'group_name': result.group_name,
 							'created': result.created,
-							'last_modified': result.last_modified
+							'last_modified': result.last_modified,
+							'size': result.size
 						};
 
 						for(var i=0; i<rows.length; i++){
@@ -96,7 +97,7 @@ function getSomeMetadata(req,res,next)
 						}
 
 						for(var i=0; i<keys.length; i++){
-							if( ['type','permissions','user_name','group_name','created','last_modified'].indexOf(keys[i]) > -1 )
+							if( ['type','permissions','user_name','group_name','created','last_modified','size'].indexOf(keys[i]) > -1 )
 							{
 								if( keys[i] === 'permissions' ){
 									if( req.query.permFormat === 'json' ){
@@ -133,6 +134,7 @@ function setMetadata(id, data, cb)
 	delete data.group_name;
 	delete data.created;
 	delete data.last_modified;
+	delete data.size;
 
 	var inserts = [];
 	var deletes = [];
@@ -146,16 +148,21 @@ function setMetadata(id, data, cb)
 			inserts.push( [id, i, isAsset ? null : data[i], assetId ] );
 	}
 
-	db.queryNoResults('INSERT OR REPLACE INTO Metadata (id, key, value, asset) VALUES '+util.escapeValue(inserts), [], function(err)
+	if( inserts.length === 0 && deletes.length === 0 )
+		cb();
+	else
 	{
-		if(err){
-			cb(err);
-		}
-		else {
-			//db.queryNoResults('DELETE FROM Metadata WHERE value = NULL AND asset = NULL', [], cb);
-			db.queryNoResults('DELETE FROM Metadata WHERE id = ? AND key IN ('+util.escapeValue(deletes)+')', [id], cb);
-		}
-	});
+		db.queryNoResults('INSERT OR REPLACE INTO Metadata (id, key, value, asset) VALUES '+util.escapeValue(inserts), [], function(err)
+		{
+			if(err){
+				cb(err);
+			}
+			else {
+				//db.queryNoResults('DELETE FROM Metadata WHERE value = NULL AND asset = NULL', [], cb);
+				db.queryNoResults('DELETE FROM Metadata WHERE id = ? AND key IN ('+util.escapeValue(deletes)+')', [id], cb);
+			}
+		});
+	}
 }
 
 function setAllMetadata(req,res,next)
@@ -204,7 +211,7 @@ function setSomeMetadata(req,res,next)
 {
 	var id = parseInt(req.params.id, 16);
 
-	if( ['permissions','group_name','type','user_name','created','last_modified'].indexOf(req.params.field) > -1 ){
+	if( ['permissions','group_name','type','user_name','created','last_modified','size'].indexOf(req.params.field) > -1 ){
 		res.status(403).send('Cannot directly modify protected field');
 	}
 	else if( req.body.length === 0 ){
@@ -285,7 +292,7 @@ function deleteAllMetadata(req,res,next)
 function deleteSomeMetadata(req,res,next)
 {
 	var id = parseInt(req.params.id, 16);
-	if( ['permissions','group_name','type','user_name','created','last_modified'].indexOf(req.params.field) > -1 ){
+	if( ['permissions','group_name','type','user_name','created','last_modified','size'].indexOf(req.params.field) > -1 ){
 		res.status(403).send('Cannot clear protected field');
 	}
 	else
