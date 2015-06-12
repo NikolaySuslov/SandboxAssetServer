@@ -50,6 +50,7 @@ function router(config)
 
 	// parse client session, if available
 	router.use( util.headerSessions );
+	router.use( util.parseRange );
 
 	// define routes
 	router.post('/assets/new', assets.newAsset);

@@ -42,6 +42,28 @@ function headerSessions(req,res,next)
 	return next();
 }
 
+function parseRange(req,res,next)
+{
+	res.set('Accept-Ranges', 'bytes');
+	if( /^bytes=(\d+-\d*|-\d+)(,(\d+-\d*|-\d+))*$/.test(req.headers['range']) )
+	{
+		req.ranges = [];
+		var ranges = req.headers['range'].split('=')[1].split(',');
+		for(var i=0; i<ranges.length; i++)
+		{
+			var parts = ranges[i].split('-');
+			if( !parts[0] )
+				req.ranges.push({start: '-'+parts[1]});
+			else if( !parts[1] )
+				req.ranges.push({start: parts[0]});
+			else
+				req.ranges.push({start: parts[0], end: parts[1]});
+		}
+	}
+
+	return next();
+}
+
 function formatId(int,idOnly){
 	var id = ('0000000'+int.toString(16)).slice(-8);
 	if(idOnly)
@@ -59,6 +81,7 @@ function escapeKey(str){
 }
 
 exports.headerSessions = headerSessions;
+exports.parseRange = parseRange;
 exports.formatId = formatId;
 exports.escapeValue = escapeValue;
 exports.escapeKey = escapeKey;
