@@ -40,14 +40,14 @@ function getAsset(req,res,next)
 				else {
 					// set mimetype from db
 					res.set('Content-Type', result.type);
-					sendRanges(buffer, req.ranges, res);
+					sendRanges(buffer, result.type, req.ranges, res);
 				}
 			});
 		}
 	});
 };
 
-function sendRanges(buf, ranges, res)
+function sendRanges(buf, type, ranges, res)
 {
 	if( !ranges ){
 		return res.send(buf);
@@ -55,56 +55,69 @@ function sendRanges(buf, ranges, res)
 	else
 	{
 		// assemble output
-		var outputLength = 0;
 		var output = [];
-
-		var i = 0;
-		//for(var i=0; i<ranges.length; i++){
+		for(var i=0; i<ranges.length; i++){
 
 			var startValid = ranges[i].start >= 0 && ranges[i].start < buf.length;
 			var endValid = ranges[i].end >= ranges[i].start && ranges[i].end < buf.length;
 			var suffixValid = ranges[i].suffix < 0 && ranges[i].suffix > -buf.length;
 
-			if( ranges[i].start && ranges[i].end && startValid && endValid )
+			if( ranges[i].start !== undefined && ranges[i].end !== undefined && startValid && endValid )
 			{
 				ranges[i].actualStart = ranges[i].start;
 				ranges[i].actualEnd = ranges[i].end;
 
-				outputLength += ranges[i].end - ranges[i].start + 1;
-				output.push( buf.slice(ranges[i].start, ranges[i].end+1) );
+				ranges[i].data = buf.slice(ranges[i].start, ranges[i].end+1);
 			}
-			else if( ranges[i].end && !endValid )
+			else if( ranges[i].end !== undefined && !endValid )
 			{
 				// syntactically invalid rule
 				return res.send(buf);
 			}
-			else if( ranges[i].start && startValid && !ranges[i].end )
+			else if( ranges[i].start !== undefined && startValid && ranges[i].end === undefined )
 			{
 				ranges[i].actualStart = ranges[i].start;
 				ranges[i].actualEnd = buf.length-1;
 
-				outputLength += buf.length - ranges[i].start;
-				output.push( buf.slice(ranges[i].start) );
+				ranges[i].data = buf.slice(ranges[i].start);
 			}
 			else if( ranges[i].suffix && suffixValid )
 			{
 				ranges[i].actualStart = buf.length + ranges[i].suffix;
 				ranges[i].actualEnd = buf.length-1;
 
-				outputLength += -ranges[i].suffix;
-				output.push( buf.slice(ranges[i].suffix) );
+				ranges[i].data = buf.slice(ranges[i].suffix);
 			}
-		//}
+
+			if( ranges[i].data )
+				output.push(ranges[i]);
+		}
 
 		// unsatisfiable
-		if( outputLength === 0 ){
+		if( output.length === 0 ){
 			res.set('Content-Range', 'bytes */'+buf.length);
 			res.sendStatus(416);
 		}
-		else {
-			var r = 'bytes '+ranges[0].actualStart+'-'+ranges[0].actualEnd+'/'+buf.length;
+		else if( output.length === 1 ){
+			var r = 'bytes '+output[0].actualStart+'-'+output[0].actualEnd+'/'+buf.length;
 			res.set('Content-Range', r);
-			res.status(206).send( Buffer.concat(output, outputLength) );
+			res.status(206).send( output[0].data );
+		}
+		else
+		{
+			res.sendStatus(501);
+			/*res.writeHead(206, {'Content-Type': 'multipart/byteranges; boundary=NEXT_RANGE'});
+
+			for(var i=0; i<output.length; i++)
+			{
+				res.write('\n--NEXT_RANGE\n');
+				res.write('Content-Type: '+ type +'\n');
+				var r = 'bytes '+output[i].actualStart+'-'+output[i].actualEnd+'/'+buf.length;
+				res.write('Content-Range: '+ r +'\n\n');
+				res.write(output[i].data);
+			}
+			res.end('\n--NEXT_RANGE--');*/
+
 		}
 	}
 }
