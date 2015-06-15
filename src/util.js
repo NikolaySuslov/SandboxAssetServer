@@ -52,12 +52,15 @@ function parseRange(req,res,next)
 		for(var i=0; i<ranges.length; i++)
 		{
 			var parts = ranges[i].split('-');
-			if( !parts[0] )
-				req.ranges.push({start: '-'+parts[1]});
-			else if( !parts[1] )
-				req.ranges.push({start: parts[0]});
-			else
-				req.ranges.push({start: parts[0], end: parts[1]});
+			if( parts[0] ){
+				if( parts[1] )
+					req.ranges.push( {start: parseInt(parts[0]), end: parseInt(parts[1])} );
+				else
+					req.ranges.push( {start: parseInt(parts[0])} );
+			}
+			else if( parts[1] ){
+				req.ranges.push( {suffix: parseInt('-'+parts[1])} );
+			}
 		}
 	}
 
