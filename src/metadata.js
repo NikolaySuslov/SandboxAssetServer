@@ -145,7 +145,7 @@ function setMetadata(id, data, cb)
 		if( data[i] === null )
 			deletes.push(i);
 		else
-			inserts.push( [id, i, isAsset ? null : data[i], assetId ] );
+			inserts.push( [id, i, isAsset ? null : JSON.stringify(data[i]), assetId ] );
 	}
 
 	if( inserts.length === 0 && deletes.length === 0 )
