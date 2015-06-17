@@ -52,6 +52,11 @@ function router(config)
 	router.use( util.headerSessions );
 	router.use( util.parseRange );
 
+	// tell clients how to authenticate
+	router.get('/session-cookie-name', function(req,res){
+		res.send( config.sessionHeader );
+	});
+
 	// define routes
 	router.post('/assets/new', assets.newAsset);
 	router.get('/assets/:id([0-9A-Fa-f]{8})', assets.getAsset);
@@ -80,6 +85,10 @@ function router(config)
 	router.get('/groups/:gname([A-Za-z_][A-Za-z0-9_-]*)$', groups.getGroupMembership);
 	router.post('/groups/:gname([A-Za-z_][A-Za-z0-9_-]*)/adduser', groups.addUser);
 	router.post('/groups/:gname([A-Za-z_][A-Za-z0-9_-]*)/rmuser', groups.rmUser);
+
+	router.use(function(req,res){
+		res.sendStatus(404);
+	});
 
 	console.log('Asset server directory is', absoluteDataDir);
 	return router;
