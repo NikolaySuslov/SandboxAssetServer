@@ -53,7 +53,7 @@ function router(config)
 	router.use( util.parseRange );
 
 	// tell clients how to authenticate
-	router.get('/session-cookie-name', function(req,res){
+	router.get('/session-header-name', function(req,res){
 		res.send( config.sessionHeader );
 	});
 

@@ -1,6 +1,16 @@
 ﻿Asset Server APIs
 =================
 
+Configuration
+-------------
+
+### /session-header-name
+
+Since this asset server does not authenticate, it relies on client systems to authenticate users. Clients must send a signed and encrypted session string with all `POST` and `DELETE` requests to this server. The session must have been encrypted with the same name and secret as supplied in `config.json` (`sessionCookieName` and `sessionSecret` respectively), preferably using the Node.js middleware [node-client-sessions](https://github.com/mozilla/node-client-sessions). The session data can be supplied either with a header (identified by this endpoint) or a cookie (given in `config.json`).
+
+* `GET` - Returns the name of the header to be used for client session data.
+
+
 Asset Management
 ----------------
 
