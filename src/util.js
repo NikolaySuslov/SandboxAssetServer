@@ -1,6 +1,8 @@
 var decode = require('client-sessions').util.decode,
 	libpath = require('path'),
-	mysql = require('mysql');
+	mysql = require('mysql'),
+	crypto = require('crypto'),
+	crc = require('crc');
 
 
 function headerSessions(req,res,next)
@@ -82,6 +84,37 @@ function escapeValue(str){
 function escapeKey(str){
 	return mysql.escapeId(str);
 }
+
+function maybeSendData(req,res, data)
+{
+	var etag = '';
+
+	// convert data if necessary, and generate etag
+	if( !(data instanceof Object) ){
+		data = new Buffer(JSON.stringify(data), 'utf8');
+		etag = 'W/"'+crc.crc32(data)+'"';
+	}
+	else if( !(data instanceof Buffer) ){
+		data = new Buffer(JSON.stringify(data), 'utf8');
+		etag = 'W/"'+crc.crc32(data)+'"';
+	}
+	else {
+		var md5 = crypto.createHash('md5');
+		md5.update(data);
+		etag = '"'+md5.digest('hex')+'"';
+	}
+
+	if(req.method === 'GET' && req.headers['if-none-match'] && (req.headers['if-none-match'] === etag || req.headers['if-none-match'] === '*')){
+		res.sendStatus(304);
+	}
+	//else if(req.headers['if-match'] && (req.headers['if-match'] !== etag ||
+	else {
+		res.set('ETag', etag);
+		res.send(data);
+	}
+	
+}
+
 
 exports.headerSessions = headerSessions;
 exports.parseRange = parseRange;

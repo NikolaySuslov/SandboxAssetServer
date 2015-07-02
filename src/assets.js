@@ -1,5 +1,6 @@
 var mime = require('mime'),
 	libpath = require('path'),
+	crypto = require('crypto'),
 
 	storage = require('./storage.js'),
 	db = require('./db.js'),
@@ -40,17 +41,17 @@ function getAsset(req,res,next)
 				else {
 					// set mimetype from db
 					res.set('Content-Type', result.type);
-					sendRanges(buffer, result.type, req.ranges, res);
+					sendRanges(buffer, result.type, req.ranges, req, res);
 				}
 			});
 		}
 	});
 };
 
-function sendRanges(buf, type, ranges, res)
+function sendRanges(buf, type, ranges, req, res)
 {
 	if( !ranges ){
-		return res.send(buf);
+		return util.maybeSendData(req,res,buf);
 	}
 	else
 	{
@@ -101,7 +102,8 @@ function sendRanges(buf, type, ranges, res)
 		else if( output.length === 1 ){
 			var r = 'bytes '+output[0].actualStart+'-'+output[0].actualEnd+'/'+buf.length;
 			res.set('Content-Range', r);
-			res.status(206).send( output[0].data );
+			res.status(206);
+			util.maybeSendData(req,res, output[0].data);
 		}
 		else
 		{
