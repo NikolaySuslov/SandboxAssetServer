@@ -63,7 +63,7 @@ function router(config)
 	router.post('/assets/:id([0-9A-Fa-f]{8})', assets.overwriteAsset);
 	router.delete('/assets/:id([0-9A-Fa-f]{8})', assets.deleteAsset);
 
-	router.get('/assets/by-user/:user([A-Za-z_][A-Za-z0-9_-]*)$', query.listAssetsByUser);
+	router.get('/assets/by-user/:user$', query.listAssetsByUser);
 	router.get('/assets/by-meta/:conj((?:any|all))-of', query.listAssetsByMeta);
 
 	router.post('/assets/:id([0-9A-Fa-f]{8})/meta/permissions', perms.setPerms);
@@ -81,7 +81,7 @@ function router(config)
 	router.delete('/assets/:id([0-9A-Fa-f]{8})/meta', metadata.deleteAllMetadata);
 
 	router.post('/groups/new', groups.newGroup);
-	router.get('/groups/by-user/:user([A-Za-z_][A-Za-z0-9_-]*)$', groups.getUserMembership);
+	router.get('/groups/by-user/:user$', groups.getUserMembership);
 	router.get('/groups/:gname([A-Za-z_][A-Za-z0-9_-]*)$', groups.getGroupMembership);
 	router.post('/groups/:gname([A-Za-z_][A-Za-z0-9_-]*)/adduser', groups.addUser);
 	router.post('/groups/:gname([A-Za-z_][A-Za-z0-9_-]*)/rmuser', groups.rmUser);
