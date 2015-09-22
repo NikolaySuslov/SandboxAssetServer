@@ -59,9 +59,9 @@ function router(config)
 
 	// define routes
 	router.post('/assets/new', assets.newAsset);
-	router.get('/assets/:id([0-9A-Fa-f]{8})', assets.getAsset);
-	router.post('/assets/:id([0-9A-Fa-f]{8})', assets.overwriteAsset);
-	router.delete('/assets/:id([0-9A-Fa-f]{8})', assets.deleteAsset);
+	router.get('/assets/:id([0-9A-Fa-f]{8})(.[A-Za-z0-9]+)?', assets.getAsset);
+	router.post('/assets/:id([0-9A-Fa-f]{8})(.[A-Za-z0-9]+)?', assets.overwriteAsset);
+	router.delete('/assets/:id([0-9A-Fa-f]{8})(.[A-Za-z0-9]+)?', assets.deleteAsset);
 
 	router.get('/assets/by-user/:user$', query.listAssetsByUser);
 	router.get('/assets/by-meta/:conj((?:any|all))-of', query.listAssetsByMeta);

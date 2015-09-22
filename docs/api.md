@@ -31,7 +31,7 @@ Returns:
 
 ### /assets/*asset_id*
 
-Manage a particular asset.
+Manage a particular asset. Can also specify a file extension (e.g. `/assets/d3adb33f.png`), which is ignored by the server, but which can be useful for consuming applications.
 
 * `GET` - Retrieves the asset. Requires read permissions on the asset.
 * `POST` - Upload a file to the server to overwrite an existing asset. Requires write permissions on the asset.
