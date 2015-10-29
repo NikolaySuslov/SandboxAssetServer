@@ -43,7 +43,7 @@ function getAllMetadata(req,res,next)
 						};
 
 						for(var i=0; i<rows.length; i++){
-							meta[rows[i].key] = rows[i].value !== undefined ? rows[i].value : 'asset:'+('00000000'+rows[i].asset.toString(16)).slice(-8);
+							meta[rows[i].key] = rows[i].value !== null ? rows[i].value : 'asset:'+('00000000'+rows[i].asset.toString(16)).slice(-8);
 						}
 
 						res.json(meta);
@@ -93,8 +93,7 @@ function getSomeMetadata(req,res,next)
 						var out = {};
 
 						for(var i=0; i<rows.length; i++){
-							out[ rows[i].key ] = rows[i].value !== undefined ? rows[i].value : 'asset:'+('00000000'+rows[i].asset.toString(16)).slice(-8);
-							out[ rows[i].key ] = rows[i].value || 'asset:'+rows[i].asset.toString(16);
+							out[ rows[i].key ] = rows[i].value !== null ? rows[i].value : 'asset:'+('00000000'+rows[i].asset.toString(16)).slice(-8);
 						}
 
 						for(var i=0; i<keys.length; i++){
