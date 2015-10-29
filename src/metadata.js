@@ -43,7 +43,7 @@ function getAllMetadata(req,res,next)
 						};
 
 						for(var i=0; i<rows.length; i++){
-							meta[rows[i].key] = rows[i].value || 'asset:'+rows[i].asset.toString(16);
+							meta[rows[i].key] = rows[i].value !== undefined ? rows[i].value : 'asset:'+('00000000'+rows[i].asset.toString(16)).slice(-8);
 						}
 
 						res.json(meta);
@@ -85,7 +85,7 @@ function getSomeMetadata(req,res,next)
 					else if(keys.length === 1 && rows.length === 1 && rows[0].asset && !req.query.raw)
 					{
 						var origPath = liburl.parse( req.originalUrl ).pathname;
-						var newPath = origPath.replace( new RegExp('[0-9A-Fa-f]{8}\/meta\/'+keys[0]+'$'), rows[0].asset.toString(16) );
+						var newPath = origPath.replace( new RegExp('[0-9A-Fa-f]{8}\/meta\/'+keys[0]+'$'), ('00000000'+rows[0].asset.toString(16)).slice(-8) );
 						res.redirect(newPath);
 					}
 					else
@@ -93,6 +93,7 @@ function getSomeMetadata(req,res,next)
 						var out = {};
 
 						for(var i=0; i<rows.length; i++){
+							out[ rows[i].key ] = rows[i].value !== undefined ? rows[i].value : 'asset:'+('00000000'+rows[i].asset.toString(16)).slice(-8);
 							out[ rows[i].key ] = rows[i].value || 'asset:'+rows[i].asset.toString(16);
 						}
 
