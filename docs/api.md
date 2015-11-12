@@ -109,18 +109,20 @@ Manage an asset's assigned group.
 Search
 ------
 
-### /assets/by-user/*user_name*
+### /assets/by-user/*user_name* \[?returns=field1,field2,...\]
 
 Retrieve a list of assets owned by a particular user. This is functionally identical to `/assets/by-meta/all-of?user_name=<user_name>`.
 
-* `GET` - Returns a JSON object containing the user name (`user_name`) and an object (`assets`) mapping asset IDs to other objects containing a minimum set of asset metadata. An asset is described here by its metadata `id`, `type`, `permissions`, `user_name`, `group_name`, `created`, `last_update`, and `size`.
+If provided, the *returns* query argument defines the metadata fields that are returned with each search result. Must be a comma-separated list of field names. If not provided, defaults to `id,type,permissions,user_name,group_name,created,last_update,size`.
+
+* `GET` - Returns a JSON object containing the user name (`user_name`) and an object (`assets`) mapping asset IDs to other objects containing the requested set of asset metadata.
 
 Returns:
 
 * `200` - Request successful.
 
 
-### /assets/by-meta/any-of, all-of \[?query_args\]
+### /assets/by-meta/any-of, all-of \[?query_args\] \[&returns=field1,field2,...]
 
 Retrieve a list of assets whose protected and user-defined metadata satisfies any of, or all of, a set of criteria. Each query argument describes a single criterion according to the following syntax:
 
@@ -141,6 +143,8 @@ You can also search for assets that match at least one criterion instead of all 
 	GET /assets/by-meta/any-of?type!equal!0=image/jpeg&type!equal!1=image/png
 
 This query will return any JPEG or PNG assets (though it would be more practical in this case to say `?type!like=image/%`).
+
+If provided, the *returns* query argument is not interpreted as a metadata field, but instead defines the metadata fields that are returned with each search result. Must be a comma-separated list of field names. If not provided, defaults to `id,type,permissions,user_name,group_name,created,last_update,size`.
 
 * `GET` - Returns a JSON object containing the input query (`query`), and the matching assets (`matches`) as an object. This object is of identical structure to that returned by the `by-user` endpoint.
 
