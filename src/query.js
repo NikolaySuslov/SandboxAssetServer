@@ -40,6 +40,9 @@ function listAssetsByMeta(req,res,next)
 
 	for(var i in req.query)
 	{
+		// ignore 'returns' query arg for where clause
+		if( i === 'returns' ) continue;
+
 		var val = req.query[i];
 		var wherePhrase;
 
@@ -108,12 +111,47 @@ function listAssetsByMeta(req,res,next)
 		return res.status(400).send('Must supply at least one valid query argument');
 	}
 
+
+	/*
+	 * Craft 'select' part of statement based on 'returns' query arg
+	 */
+	req.query.returns = req.query.returns && req.query.returns.split(',') || 
+		['id', 'permissions', 'type', 'user_name', 'group_name', 'size', 'created', 'last_modified'];
+
+	var select = [];
+
+	for(var i=0; i<req.query.returns.length; i++)
+	{
+		var field = req.query.returns[i];
+		switch(field)
+		{
+		case 'id':
+			select.push('PRINTF("%08x",Assets.id) AS id');
+			break;
+		case 'permissions':
+			select.push('PRINTF("%o",Assets.permissions) AS permissions');
+			break;
+		case 'created':
+		case 'last_modified':
+			select.push('strftime("%Y-%m-%dT%H:%M:%SZ",Assets.'+field+') AS '+field);
+			break;
+		case 'type':
+		case 'user_name':
+		case 'group_name':
+		case 'size':
+			select.push('Assets.'+field+' as '+field);
+			break;
+		default:
+			select.push(
+				'(SELECT CASE WHEN asset IS NOT NULL THEN PRINTF("asset:%08x",asset) ELSE value END '+
+				'FROM Metadata WHERE id = Assets.id AND key = '+sqlEscapeVal(field)+') AS '+sqlEscapeKey(field)
+			);
+		};
+	}
+
 	db.queryAllResults(
-		'SELECT DISTINCT '+
-			'PRINTF("%08x",Assets.id) AS id, PRINTF("%o",Assets.permissions) AS permissions, '+
-			'Assets.type AS type, Assets.user_name AS user_name, Assets.group_name AS group_name, Assets.size AS size, '+
-			'strftime("%Y-%m-%dT%H:%M:%SZ",Assets.created) AS created, strftime("%Y-%m-%dT%H:%M:%SZ",Assets.last_modified) AS last_modified '+
-		'FROM Assets LEFT JOIN Metadata ON Metadata.id = Assets.id '+ whereClause,
+		'SELECT DISTINCT '+select.join(', ')+
+		' FROM Assets LEFT JOIN Metadata ON Metadata.id = Assets.id '+ whereClause,
 		[],
 		function(err,rows){
 			if(err){
