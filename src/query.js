@@ -1,12 +1,56 @@
 var util = require('./util.js'),
 	db = require('./db.js');
 
+function getSelectFromCSV(csv)
+{
+	var sqlEscapeVal = util.escapeValue, sqlEscapeKey = util.escapeKey;
+
+	/*
+	 * Craft 'select' part of statement based on 'returns' query arg
+	 */
+	var returns = csv && csv.split(',') || 
+		['id', 'permissions', 'type', 'user_name', 'group_name', 'size', 'created', 'last_modified'];
+
+	var select = [];
+
+	for(var i=0; i<returns.length; i++)
+	{
+		var field = returns[i];
+		switch(field)
+		{
+		case 'id':
+			select.push('PRINTF("%08x",Assets.id) AS id');
+			break;
+		case 'permissions':
+			select.push('PRINTF("%o",Assets.permissions) AS permissions');
+			break;
+		case 'created':
+		case 'last_modified':
+			select.push('strftime("%Y-%m-%dT%H:%M:%SZ",Assets.'+field+') AS '+field);
+			break;
+		case 'type':
+		case 'user_name':
+		case 'group_name':
+		case 'size':
+			select.push('Assets.'+field+' as '+field);
+			break;
+		default:
+			select.push(
+				'(SELECT CASE WHEN asset IS NOT NULL THEN PRINTF("asset:%08x",asset) ELSE value END '+
+				'FROM Metadata WHERE id = Assets.id AND key = '+sqlEscapeVal(field)+') AS '+sqlEscapeKey(field)
+			);
+		};
+	}
+
+	return select.join(', ');
+}
+
 function listAssetsByUser(req,res,next)
 {
+	var select = getSelectFromCSV(req.query.returns);
+
 	db.queryAllResults(
-		'SELECT PRINTF("%08x",id) AS id, type, PRINTF("%o",permissions) AS permissions, user_name, group_name, size, '+
-		'strftime("%Y-%m-%dT%H:%M:%SZ",created) AS created, strftime("%Y-%m-%dT%H:%M:%SZ",last_modified) AS last_modified '+
-		'FROM Assets WHERE user_name = ?',
+		'SELECT '+select+' FROM Assets WHERE user_name = ?',
 		[req.params.user],
 		function(err,rows)
 		{
@@ -111,46 +155,10 @@ function listAssetsByMeta(req,res,next)
 		return res.status(400).send('Must supply at least one valid query argument');
 	}
 
-
-	/*
-	 * Craft 'select' part of statement based on 'returns' query arg
-	 */
-	req.query.returns = req.query.returns && req.query.returns.split(',') || 
-		['id', 'permissions', 'type', 'user_name', 'group_name', 'size', 'created', 'last_modified'];
-
-	var select = [];
-
-	for(var i=0; i<req.query.returns.length; i++)
-	{
-		var field = req.query.returns[i];
-		switch(field)
-		{
-		case 'id':
-			select.push('PRINTF("%08x",Assets.id) AS id');
-			break;
-		case 'permissions':
-			select.push('PRINTF("%o",Assets.permissions) AS permissions');
-			break;
-		case 'created':
-		case 'last_modified':
-			select.push('strftime("%Y-%m-%dT%H:%M:%SZ",Assets.'+field+') AS '+field);
-			break;
-		case 'type':
-		case 'user_name':
-		case 'group_name':
-		case 'size':
-			select.push('Assets.'+field+' as '+field);
-			break;
-		default:
-			select.push(
-				'(SELECT CASE WHEN asset IS NOT NULL THEN PRINTF("asset:%08x",asset) ELSE value END '+
-				'FROM Metadata WHERE id = Assets.id AND key = '+sqlEscapeVal(field)+') AS '+sqlEscapeKey(field)
-			);
-		};
-	}
+	var select = getSelectFromCSV(req.query.returns);
 
 	db.queryAllResults(
-		'SELECT DISTINCT '+select.join(', ')+
+		'SELECT DISTINCT '+select+
 		' FROM Assets LEFT JOIN Metadata ON Metadata.id = Assets.id '+ whereClause,
 		[],
 		function(err,rows){
