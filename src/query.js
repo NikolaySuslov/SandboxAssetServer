@@ -1,5 +1,6 @@
 var util = require('./util.js'),
-	db = require('./db.js');
+	db = require('./db.js'),
+	perms = require('./perms.js');
 
 function getSelectFromCSV(csv)
 {
@@ -10,6 +11,10 @@ function getSelectFromCSV(csv)
 	 */
 	var returns = csv && csv.split(',') || 
 		['id', 'permissions', 'type', 'user_name', 'group_name', 'size', 'created', 'last_modified'];
+
+	// query api doesn't work if id isn't selected
+	if(returns.indexOf('id') === -1)
+		returns.splice(0, 0, 'id');
 
 	var select = [];
 
@@ -66,6 +71,8 @@ function listAssetsByUser(req,res,next)
 				};
 
 				for(var i=0; i<rows.length; i++){
+					if(rows[i].permissions && req.query.permFormat === 'json')
+						rows[i].permissions = perms.unpackPerms(parseInt(rows[i].permissions,8));
 					ret.assets[ rows[i].id ] = rows[i];
 				}
 
@@ -84,8 +91,8 @@ function listAssetsByMeta(req,res,next)
 
 	for(var i in req.query)
 	{
-		// ignore 'returns' query arg for where clause
-		if( i === 'returns' ) continue;
+		// ignore 'returns' and 'permFormat' query args for where clause
+		if( i === 'returns' || i === 'permFormat' ) continue;
 
 		var val = req.query[i];
 		var wherePhrase;
@@ -170,7 +177,12 @@ function listAssetsByMeta(req,res,next)
 			{
 				var ret = {
 					query: req.query,
-					matches: rows.reduce(function(acc,cur){ acc[cur.id] = cur; return acc; }, {})
+					matches: rows.reduce(function(acc,cur){
+						if(cur.permissions && req.query.permFormat === 'json')
+							cur.permissions = perms.unpackPerms(parseInt(cur.permissions,8));
+						acc[cur.id] = cur;
+						return acc;
+					}, {})
 				};
 
 				res.json(ret);
