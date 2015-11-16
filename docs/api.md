@@ -109,7 +109,7 @@ Manage an asset's assigned group.
 Search
 ------
 
-### /assets/by-user/*user_name* \[?returns=field1,field2,...\]
+### /assets/by-user/*user_name* \[?returns=field1,field2,...\] \[&permFormat=json\]
 
 Retrieve a list of assets owned by a particular user. This is functionally identical to `/assets/by-meta/all-of?user_name=<user_name>`.
 
@@ -122,7 +122,7 @@ Returns:
 * `200` - Request successful.
 
 
-### /assets/by-meta/any-of, all-of \[?query_args\] \[&returns=field1,field2,...]
+### /assets/by-meta/any-of, all-of \[?query_args\] \[&returns=field1,field2,...] \[&permFormat=json\]
 
 Retrieve a list of assets whose protected and user-defined metadata satisfies any of, or all of, a set of criteria. Each query argument describes a single criterion according to the following syntax:
 
