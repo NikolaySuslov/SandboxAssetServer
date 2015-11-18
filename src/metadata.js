@@ -111,10 +111,14 @@ function getSomeMetadata(req,res,next)
 									out[keys[i]] = result[keys[i]];
 								}
 							}
+							else if( keys[i] === 'id' )
+								out.id = req.params.id;
 						}
 
 						if( Object.keys(out).length === 0 )
 							res.status(404).send('No metadata for this asset by that name');
+						else if( Object.keys(out).length === 1 )
+							res.send(out[keys[0]]);
 						else
 							res.json(out);
 					}
