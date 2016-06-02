@@ -98,6 +98,9 @@ Configuration Options
 * `port` - STANDALONE ONLY. The port for the server to listen on.
 * `urlBasePath` - STANDALONE ONLY. Set as prefix to all API endpoints. E.g. setting this value to `/adl/sandbox/` will yield the API endpoint `/adl/sandbox/assets/new`.
  
+## Contributing to the project
+We welcome contributions to this project. Fork this repository, make changes, and submit pull requests. If you're not comfortable with editing the code, please [submit an issue](https://github.com/adlnet/SandboxAssetServer/issues) and we'll be happy to address it. 
+
 ## License
    Copyright &copy;2016 Advanced Distributed Learning
 
